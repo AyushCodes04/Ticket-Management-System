@@ -49,7 +49,41 @@ public class MainApp {
             if(user!=null) {
             	System.out.println("LOGIN SUCCESSFUL");
             	System.out.println("Welcomen"+user.getName());
-            	 System.out.println("\n===== USER MENU =====");
+            	if(user.getName().equals("ADMIN")) {
+            		System.out.println("\n===== ADMIN MENU =====");
+            	    System.out.println("1. View All Tickets");
+            	    System.out.println("2.Update ticket Status");
+            	    System.out.print("Choose option: ");
+            	    int adminOption = obj.nextInt();
+            	    obj.nextLine();
+            	    TicketDAO ticketDAO = new TicketDAO();
+            	    
+            	    if(adminOption==1) {
+            	    	List<Ticket> tickets = ticketDAO.getAllTickets();
+            	    	for(Ticket t:tickets) {
+            	    		System.out.println("Ticket Id:"+t.getTicketId());
+            	    		 System.out.println("User ID: " + t.getUserId());
+                             System.out.println("Title: " + t.getTitle());
+                             System.out.println("Priority: " + t.getPriority());
+                             System.out.println("Status: " + t.getStatus());
+            	    	}
+            	    }else if(adminOption==2) {
+            	    	System.out.print("Enter Ticket ID: ");
+                        int ticketId = obj.nextInt();
+                        obj.nextLine();
+
+                        System.out.print("Enter New Status (OPEN/IN_PROGRESS/CLOSED): ");
+                        String status = obj.nextLine().toUpperCase();
+
+                        boolean updated = ticketDAO.updateTicketStatus(ticketId, status);
+
+                        if (updated)
+                            System.out.println("Ticket Updated Successfully!");
+                        else
+                            System.out.println("Update Failed!");
+            	    }
+            	} else {
+            		System.out.println("\n===== USER MENU =====");
             	    System.out.println("1. Create Ticket");
             	    System.out.println("2. View My Tickets");
             	    System.out.print("Choose option: ");
@@ -65,7 +99,7 @@ public class MainApp {
             	        String description = obj.nextLine();
 
             	        System.out.print("Enter Priority (LOW/MEDIUM/HIGH): ");
-            	        String priority = obj.nextLine();
+            	        String priority = obj.nextLine().toUpperCase();
             	        
             	        // Create Ticket object
             	        Ticket ticket = new Ticket(user.getUserId(), title, description, priority);
@@ -79,10 +113,12 @@ public class MainApp {
             	        } else {
             	            System.out.println("Failed to Create Ticket!");
             	        }
-            	    }
-            }else {
-            	System.out.println("invalid Email or Password");
+            	}
             }
+            	 
+         }else {
+            	System.out.println("invalid Email or Password");
+           }
 			
 		}
 		obj.close();
