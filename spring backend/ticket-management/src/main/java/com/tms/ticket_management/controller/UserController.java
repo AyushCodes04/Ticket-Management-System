@@ -1,5 +1,6 @@
 package com.tms.ticket_management.controller;
 
+import com.tms.ticket_management.dto.UserDTO;
 import com.tms.ticket_management.model.User;
 import com.tms.ticket_management.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,25 +16,29 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.registerUser(user));
+    public ResponseEntity<UserDTO> registerUser(@RequestBody User user) {
+        return ResponseEntity.ok(UserDTO.fromUser(userService.registerUser(user)));
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers()
+                .stream()
+                .map(UserDTO::fromUser)
+                .toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
+                .map(UserDTO::fromUser)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(id, user));
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody User user) {
+        return ResponseEntity.ok(UserDTO.fromUser(userService.updateUser(id, user)));
     }
 
     @DeleteMapping("/{id}")

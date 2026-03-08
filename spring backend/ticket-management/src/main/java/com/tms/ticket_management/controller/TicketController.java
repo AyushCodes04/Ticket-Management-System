@@ -1,7 +1,7 @@
 package com.tms.ticket_management.controller;
 
+import com.tms.ticket_management.dto.TicketDTO;
 import com.tms.ticket_management.model.Ticket;
-import com.tms.ticket_management.model.User;
 import com.tms.ticket_management.service.TicketService;
 import com.tms.ticket_management.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,37 +18,47 @@ public class TicketController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<Ticket> createTicket(@RequestBody Ticket ticket) {
-        return ResponseEntity.ok(ticketService.createTicket(ticket));
+    public ResponseEntity<TicketDTO> createTicket(@RequestBody Ticket ticket) {
+        return ResponseEntity.ok(TicketDTO.fromTicket(ticketService.createTicket(ticket)));
     }
 
     @GetMapping
-    public ResponseEntity<List<Ticket>> getAllTickets() {
-        return ResponseEntity.ok(ticketService.getAllTickets());
+    public ResponseEntity<List<TicketDTO>> getAllTickets() {
+        return ResponseEntity.ok(ticketService.getAllTickets()
+                .stream()
+                .map(TicketDTO::fromTicket)
+                .toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Ticket> getTicketById(@PathVariable Long id) {
+    public ResponseEntity<TicketDTO> getTicketById(@PathVariable Long id) {
         return ticketService.getTicketById(id)
+                .map(TicketDTO::fromTicket)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<Ticket>> getTicketsByStatus(@PathVariable Ticket.Status status) {
-        return ResponseEntity.ok(ticketService.getTicketsByStatus(status));
+    public ResponseEntity<List<TicketDTO>> getTicketsByStatus(@PathVariable Ticket.Status status) {
+        return ResponseEntity.ok(ticketService.getTicketsByStatus(status)
+                .stream()
+                .map(TicketDTO::fromTicket)
+                .toList());
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Ticket>> getTicketsByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<TicketDTO>> getTicketsByUser(@PathVariable Long userId) {
         return userService.getUserById(userId)
-                .map(user -> ResponseEntity.ok(ticketService.getTicketsByUser(user)))
+                .map(user -> ResponseEntity.ok(ticketService.getTicketsByUser(user)
+                        .stream()
+                        .map(TicketDTO::fromTicket)
+                        .toList()))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Ticket> updateTicket(@PathVariable Long id, @RequestBody Ticket ticket) {
-        return ResponseEntity.ok(ticketService.updateTicket(id, ticket));
+    public ResponseEntity<TicketDTO> updateTicket(@PathVariable Long id, @RequestBody Ticket ticket) {
+        return ResponseEntity.ok(TicketDTO.fromTicket(ticketService.updateTicket(id, ticket)));
     }
 
     @DeleteMapping("/{id}")

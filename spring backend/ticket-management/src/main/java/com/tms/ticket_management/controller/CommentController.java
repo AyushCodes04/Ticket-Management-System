@@ -1,7 +1,7 @@
 package com.tms.ticket_management.controller;
 
+import com.tms.ticket_management.dto.CommentDTO;
 import com.tms.ticket_management.model.Comment;
-import com.tms.ticket_management.model.Ticket;
 import com.tms.ticket_management.service.CommentService;
 import com.tms.ticket_management.service.TicketService;
 import lombok.RequiredArgsConstructor;
@@ -18,14 +18,17 @@ public class CommentController {
     private final TicketService ticketService;
 
     @PostMapping
-    public ResponseEntity<Comment> addComment(@RequestBody Comment comment) {
-        return ResponseEntity.ok(commentService.addComment(comment));
+    public ResponseEntity<CommentDTO> addComment(@RequestBody Comment comment) {
+        return ResponseEntity.ok(CommentDTO.fromComment(commentService.addComment(comment)));
     }
 
     @GetMapping("/ticket/{ticketId}")
-    public ResponseEntity<List<Comment>> getCommentsByTicket(@PathVariable Long ticketId) {
+    public ResponseEntity<List<CommentDTO>> getCommentsByTicket(@PathVariable Long ticketId) {
         return ticketService.getTicketById(ticketId)
-                .map(ticket -> ResponseEntity.ok(commentService.getCommentsByTicket(ticket)))
+                .map(ticket -> ResponseEntity.ok(commentService.getCommentsByTicket(ticket)
+                        .stream()
+                        .map(CommentDTO::fromComment)
+                        .toList()))
                 .orElse(ResponseEntity.notFound().build());
     }
 
