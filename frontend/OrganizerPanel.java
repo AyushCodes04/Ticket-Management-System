@@ -89,6 +89,10 @@ public class OrganizerPanel extends JFrame {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         add(scrollPane);
+        // scroll speed fast karo — default bohot slow hoti hai
+        // simple terms mein: ek baar scroll karo toh zyada pixels move ho
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
         setVisible(true);
     }
 
