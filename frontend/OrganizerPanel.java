@@ -63,7 +63,8 @@ public class OrganizerPanel extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1000, 700);
         setLocationRelativeTo(null); // screen ke beech mein khulega
-        setResizable(false);
+        setResizable(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // root panel — sab kuch iske andar hai
         JPanel root = new JPanel(new BorderLayout());
@@ -81,7 +82,13 @@ public class OrganizerPanel extends JFrame {
 
         root.add(buildStatusBar(), BorderLayout.SOUTH);
 
-        add(root);
+        JScrollPane scrollPane = new JScrollPane(root);
+        scrollPane.setBackground(BG_COLOR);
+        scrollPane.getViewport().setBackground(BG_COLOR);
+        scrollPane.setBorder(null);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        add(scrollPane);
         setVisible(true);
     }
 
