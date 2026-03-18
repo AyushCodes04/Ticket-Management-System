@@ -27,7 +27,8 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 600);
         setLocationRelativeTo(null); // screen ke beech mein khulega
-        setResizable(false);         // size change nahi hoga
+        setResizable(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // root panel — sabka baap, iske andar sab kuch hai
         JPanel root = new JPanel(new BorderLayout());
@@ -39,7 +40,13 @@ public class MainFrame extends JFrame {
         root.add(buildCardPanel(), BorderLayout.CENTER);
         root.add(buildFooter(), BorderLayout.SOUTH);
 
-        add(root);
+        JScrollPane scrollPane = new JScrollPane(root);
+        scrollPane.setBackground(BG_COLOR);
+        scrollPane.getViewport().setBackground(BG_COLOR);
+        scrollPane.setBorder(null);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        add(scrollPane);
         setVisible(true);
     }
 
