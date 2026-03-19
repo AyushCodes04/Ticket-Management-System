@@ -37,4 +37,15 @@ public class AuthController {
                 userDetails.getAuthorities().iterator().next().getAuthority()
         ));
     }
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody AuthDTO.RegisterRequest request) {
+        User user=new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(User.Role.USER);
+
+        userService.registerUser(user);
+        return ResponseEntity.ok("User registered successfully");
+    }
 }
