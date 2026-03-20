@@ -41,5 +41,13 @@ public class AttendeePanel extends JFrame {
 
     // status bar
     private JLabel statusLabel;
+
+     // sample events — testing ke liye, baad mein database se aayenge
+    private String[][] sampleEvents = {
+        {"Tech Fest 2025",    "25/08/2025", "10:00 AM", "City Convention Hall", "VIP(₹999), General(₹299)"},
+        {"Music Night",       "12/09/2025", "07:00 PM", "Open Air Amphitheatre","Gold(₹1499), Silver(₹699)"},
+        {"Startup Summit",    "05/10/2025", "09:00 AM", "Business Park, Hall B", "Pass(₹499)"},
+        {"Cultural Evening",  "20/10/2025", "05:30 PM", "College Auditorium",   "Free(₹0), Paid(₹199)"},
+    };
     
 }
