@@ -1,0 +1,27 @@
+// AttendeePanel.java
+//ye woh screen hai jahan user events dekhta hai aur ticket book karta hai
+// left side pe events ki list hai, right side pe selected event ki details aur ticket purchase form
+ 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+ 
+public class AttendeePanel extends JFrame {
+ 
+    // ---------------------------------------------------------------
+    // rang aur theme — poori app ka ek hi color scheme
+    // simple terms mein: MainFrame aur OrganizerPanel se same colors
+    // ---------------------------------------------------------------
+    private static final Color BG_COLOR       = new Color(15, 15, 25);   // pura background
+    private static final Color CARD_COLOR     = new Color(25, 25, 40);   // panel ka background
+    private static final Color ACCENT_COLOR   = new Color(99, 102, 241); // indigo — main buttons
+    private static final Color TEXT_PRIMARY   = new Color(240, 240, 255); // main text
+    private static final Color TEXT_SECONDARY = new Color(150, 150, 180); // label text
+    private static final Color INPUT_BG       = new Color(35, 35, 55);   // input fields ka background
+    private static final Color SUCCESS_COLOR  = new Color(34, 197, 94);  // green — success ke liye
+    private static final Color ERROR_COLOR    = new Color(239, 68, 68);  // red — error ke liye
+ 
+    
+}
