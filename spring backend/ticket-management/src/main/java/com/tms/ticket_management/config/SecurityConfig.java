@@ -1,7 +1,6 @@
 package com.tms.ticket_management.config;
 
 import com.tms.ticket_management.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -51,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/tickets/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers("/api/qr/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/api/comments/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()
                 )

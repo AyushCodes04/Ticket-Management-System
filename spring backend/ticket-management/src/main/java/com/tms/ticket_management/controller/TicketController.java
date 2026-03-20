@@ -2,10 +2,12 @@ package com.tms.ticket_management.controller;
 
 import com.tms.ticket_management.dto.TicketDTO;
 import com.tms.ticket_management.model.Ticket;
+import com.tms.ticket_management.model.User;
 import com.tms.ticket_management.service.TicketService;
 import com.tms.ticket_management.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -18,7 +20,12 @@ public class TicketController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<TicketDTO> createTicket(@RequestBody Ticket ticket) {
+    public ResponseEntity<TicketDTO> createTicket(@RequestBody Ticket ticket, Authentication authentication) {
+        String username=authentication.getName();
+        // tickets.created_by is NOT NULL in DB, so we must set it from the authenticated user.
+        User user=userService.getUserByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: "+username));
+        ticket.setCreatedBy(user);
         return ResponseEntity.ok(TicketDTO.fromTicket(ticketService.createTicket(ticket)));
     }
 

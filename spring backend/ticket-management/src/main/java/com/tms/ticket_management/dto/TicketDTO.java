@@ -12,6 +12,8 @@ public class TicketDTO {
     private String description;
     private Ticket.Status status;
     private Ticket.Priority priority;
+    private String qrCode;
+    private Boolean isUsed;
     private UserDTO createdBy;
     private UserDTO assignedTo;
     private LocalDateTime createdAt;
@@ -24,6 +26,8 @@ public class TicketDTO {
         dto.setDescription(ticket.getDescription());
         dto.setStatus(ticket.getStatus());
         dto.setPriority(ticket.getPriority());
+        dto.setQrCode(ticket.getQrCode());
+        dto.setIsUsed(ticket.getIsUsed());
         dto.setCreatedAt(ticket.getCreatedAt());
         dto.setUpdatedAt(ticket.getUpdatedAt());
         if(ticket.getCreatedBy() != null)

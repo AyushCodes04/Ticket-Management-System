@@ -22,4 +22,13 @@ public class AuthDTO {
         private String username;
         private String role;
     }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RegisterRequest {
+        private String username;
+        private String email;
+        private String password;
+    }
 }

@@ -2,6 +2,7 @@ package com.tms.ticket_management.controller;
 
 import com.tms.ticket_management.config.JwtService;
 import com.tms.ticket_management.dto.AuthDTO;
+import com.tms.ticket_management.model.User;
 import com.tms.ticket_management.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,5 +37,17 @@ public class AuthController {
                 userDetails.getUsername(),
                 userDetails.getAuthorities().iterator().next().getAuthority()
         ));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody AuthDTO.RegisterRequest request) {
+        User user=new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(User.Role.USER);
+
+        userService.registerUser(user);
+        return ResponseEntity.ok("User registered successfully");
     }
 }

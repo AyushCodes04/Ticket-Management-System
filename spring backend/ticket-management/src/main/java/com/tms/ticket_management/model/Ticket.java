@@ -45,6 +45,13 @@ public class Ticket {
 
     private LocalDateTime updatedAt;
 
+    @Column(name="qr_code", unique=true)
+    private String qrCode;
+
+    // DB constraint: tickets.is_used is NOT NULL. Default to false so inserts succeed.
+    @Column(name="is_used", nullable=false)
+    private Boolean isUsed = false;
+
     @OneToMany(mappedBy="ticket", cascade=CascadeType.ALL)
     private List<Comment> comments;
 
