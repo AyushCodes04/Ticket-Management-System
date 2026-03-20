@@ -25,18 +25,15 @@ public class AuthController {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
-                        request.getPassword()
-                )
-        );
+                        request.getPassword()));
 
-        UserDetails userDetails=userService.loadUserByUsername(request.getUsername());
-        String token=jwtService.generateToken(userDetails);
+        UserDetails userDetails = userService.loadUserByUsername(request.getUsername());
+        String token = jwtService.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthDTO.LoginResponse(
                 token,
                 userDetails.getUsername(),
-                userDetails.getAuthorities().iterator().next().getAuthority()
-        ));
+                userDetails.getAuthorities().iterator().next().getAuthority()));
     }
 
     @PostMapping("/register")
@@ -49,5 +46,5 @@ public class AuthController {
 
         userService.registerUser(user);
         return ResponseEntity.ok("User registered successfully");
-    }
-}
+    }<<<<<<<HEAD
+}=======}>>>>>>>1e16 edb193b5faf9af59217812a25a816fd88fd4
