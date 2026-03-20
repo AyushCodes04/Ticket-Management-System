@@ -22,6 +22,24 @@ public class AttendeePanel extends JFrame {
     private static final Color INPUT_BG       = new Color(35, 35, 55);   // input fields ka background
     private static final Color SUCCESS_COLOR  = new Color(34, 197, 94);  // green — success ke liye
     private static final Color ERROR_COLOR    = new Color(239, 68, 68);  // red — error ke liye
- 
+    
+       // events ka data — saare available events yahan store hote hain
+    private DefaultTableModel eventsTableModel;
+    private JTable eventsTable;
+
+    // right side ke components — selected event ki details ke liye
+    private JLabel detailEventName;
+    private JLabel detailDate;
+    private JLabel detailTime;
+    private JLabel detailVenue;
+    private JComboBox<String> ticketTypeCombo;
+    private JTextField quantityField;
+    private JLabel priceLabel;
+
+    // purchased tickets ka record
+    private DefaultTableModel purchasedTableModel;
+
+    // status bar
+    private JLabel statusLabel;
     
 }
