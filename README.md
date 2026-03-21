@@ -9,7 +9,7 @@ A full-stack **Event Ticketing & QR-Based Entry Management System** built with S
 | Member | Role |
 |---|---|
 | Ayush Chauhan | Backend (Spring Boot) |
-| Amanpreet Singh | Frontend (React) |
+| Amanpreet Singh | Frontend (Swing) |
 | Mahak Gupta | Database (MySQL) |
 
 ---
@@ -26,8 +26,8 @@ A full-stack **Event Ticketing & QR-Based Entry Management System** built with S
 - Lombok
 
 **Frontend**
-- React (Vite)
-- Axios
+- Swing
+- Java FX
 
 **Database**
 - MySQL
@@ -97,7 +97,6 @@ src/main/java/com/tms/ticket_management/
 - Java 21
 - Maven
 - MySQL 8.x
-- Node.js (for frontend)
 
 ### Backend Setup
 
