@@ -113,5 +113,51 @@ public class AttendeePanel extends JFrame {
         panel.add(backBtn, BorderLayout.EAST);
         return panel;
     }
+
+     // left side — events ki list
+    private JPanel buildEventsListPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(CARD_COLOR);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(60, 60, 90), 1),
+            BorderFactory.createEmptyBorder(24, 24, 24, 24)
+        ));
+
+        JLabel heading = new JLabel("Available Events");
+        heading.setFont(new Font("SansSerif", Font.BOLD, 17));
+        heading.setForeground(TEXT_PRIMARY);
+        panel.add(heading, BorderLayout.NORTH);
+
+        String[] columns = {"Event Name", "Date", "Time", "Venue", "Ticket Types"};
+        eventsTableModel = new DefaultTableModel(columns, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+
+        eventsTable = new JTable(eventsTableModel);
+        eventsTable.setBackground(INPUT_BG);
+        eventsTable.setForeground(TEXT_PRIMARY);
+        eventsTable.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        eventsTable.setRowHeight(34);
+        eventsTable.setGridColor(new Color(50, 50, 75));
+        eventsTable.getTableHeader().setBackground(new Color(40, 40, 65));
+        eventsTable.getTableHeader().setForeground(TEXT_SECONDARY);
+        eventsTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        eventsTable.setSelectionBackground(ACCENT_COLOR);
+        eventsTable.setSelectionForeground(Color.WHITE);
+        eventsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        eventsTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) onEventSelected();
+        });
+
+        JScrollPane tableScroll = new JScrollPane(eventsTable);
+        tableScroll.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 90)));
+        tableScroll.getViewport().setBackground(INPUT_BG);
+        tableScroll.getVerticalScrollBar().setUnitIncrement(16);
+        panel.add(tableScroll, BorderLayout.CENTER);
+        panel.add(buildSearchBar(), BorderLayout.SOUTH);
+
+        return panel;
+    }
     
 }
