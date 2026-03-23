@@ -49,5 +49,69 @@ public class AttendeePanel extends JFrame {
         {"Startup Summit",    "05/10/2025", "09:00 AM", "Business Park, Hall B", "Pass(₹499)"},
         {"Cultural Evening",  "20/10/2025", "05:30 PM", "College Auditorium",   "Free(₹0), Paid(₹199)"},
     };
+
+    // constructor — window ka setup
+    public AttendeePanel() {
+        setTitle("EventHub — Browse Events");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(1100, 700);
+        setLocationRelativeTo(null);
+        setResizable(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(BG_COLOR);
+        root.setBorder(BorderFactory.createEmptyBorder(24, 32, 24, 32));
+
+        root.add(buildHeader(), BorderLayout.NORTH);
+
+        JPanel content = new JPanel(new GridLayout(1, 2, 24, 0));
+        content.setBackground(BG_COLOR);
+        content.add(buildEventsListPanel());
+        content.add(buildPurchasePanel());
+        root.add(content, BorderLayout.CENTER);
+
+        root.add(buildStatusBar(), BorderLayout.SOUTH);
+
+        JScrollPane scrollPane = new JScrollPane(root);
+        scrollPane.setBackground(BG_COLOR);
+        scrollPane.getViewport().setBackground(BG_COLOR);
+        scrollPane.setBorder(null);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
+
+        add(scrollPane);
+        loadSampleEvents();
+        setVisible(true);
+    }
+
+    // upar wala header — title aur back button
+    private JPanel buildHeader() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+
+        JLabel title = new JLabel("🎟  Browse Events");
+        title.setFont(new Font("SansSerif", Font.BOLD, 26));
+        title.setForeground(ACCENT_COLOR);
+
+        JButton backBtn = new JButton("← Back to Home");
+        backBtn.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        backBtn.setForeground(TEXT_SECONDARY);
+        backBtn.setBackground(CARD_COLOR);
+        backBtn.setBorderPainted(false);
+        backBtn.setFocusPainted(false);
+        backBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        backBtn.addActionListener(e -> {
+            dispose();
+            new MainFrame();
+        });
+
+        panel.add(title, BorderLayout.WEST);
+        panel.add(backBtn, BorderLayout.EAST);
+        return panel;
+    }
     
 }
