@@ -232,14 +232,22 @@ public class OrganizerPanel extends JFrame {
         panel.add(heading, BorderLayout.NORTH);
 
         // table ke columns — kya kya info dikhegi
-        String[] columns = {"Event Name", "Date", "Time", "Venue", "Ticket Types"};
+        String[] columns = {"","Event Name", "Date", "Time", "Venue", "Ticket Types"};
 
         // isCellEditable false — user table mein seedha edit nahi kar sakta
         eventsTableModel = new DefaultTableModel(columns, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            // sirf pehla column editable — checkbox click ho sake
+            @Override public boolean isCellEditable(int r, int c) { return c == 0; }
+             // pehla column Boolean — taaki checkbox render ho
+            @Override public Class getColumnClass(int c) {
+            return c == 0 ? Boolean.class : String.class;
+    }
         };
 
         JTable table = new JTable(eventsTableModel);
+        // checkbox column sirf 30px wide — bas checkbox dikhni chahiye
+        table.getColumnModel().getColumn(0).setMaxWidth(30);
+        table.getColumnModel().getColumn(0).setMinWidth(30);
         table.setBackground(INPUT_BG);
         table.setForeground(TEXT_PRIMARY);
         table.setFont(new Font("SansSerif", Font.PLAIN, 13));
@@ -252,6 +260,16 @@ public class OrganizerPanel extends JFrame {
         table.setSelectionForeground(Color.WHITE);
 
         JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.addMouseWheelListener(e -> {
+        JScrollBar bar = scrollPane.getVerticalScrollBar();
+        int limit = e.getWheelRotation() < 0 ? 0 : bar.getMaximum() - bar.getVisibleAmount();
+        if ((e.getWheelRotation() < 0 && bar.getValue() == 0) ||
+        (e.getWheelRotation() > 0 && bar.getValue() >= limit)) {
+        // table ka scroll khatam — parent ko do
+        scrollPane.getParent().dispatchEvent(e);
+    }
+});
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 90)));
         scrollPane.getViewport().setBackground(INPUT_BG);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -411,7 +429,7 @@ public class OrganizerPanel extends JFrame {
         }
 
         // table mein naya row add karo
-        eventsTableModel.addRow(new Object[]{name, date, time, venue, ticketSummary.toString()});
+        eventsTableModel.addRow(new Object[]{Boolean.FALSE,name, date, time, venue, ticketSummary.toString()});
 
         // form saaf karo — agle event ke liye ready
         eventNameField.setText("");
