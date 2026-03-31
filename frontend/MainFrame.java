@@ -8,20 +8,14 @@ import java.awt.event.*;
 
 public class MainFrame extends JFrame {
 
-    // ---------------------------------------------------------------
     // rang aur theme ke liye colors
-    // simple terms mein: poori app ka color scheme yahan set hota hai
-    // ---------------------------------------------------------------
     private static final Color BG_COLOR       = new Color(15, 15, 25);   // pura background — dark navy
     private static final Color CARD_COLOR     = new Color(25, 25, 40);   // cards ka background
     private static final Color ACCENT_COLOR   = new Color(99, 102, 241); // indigo — buttons aur headings
     private static final Color TEXT_PRIMARY   = new Color(240, 240, 255); // main text ka rang
     private static final Color TEXT_SECONDARY = new Color(150, 150, 180); // chhoti details ka rang
 
-    // ---------------------------------------------------------------
-    // constructor — jab MainFrame banao tab ye sab set hota hai
-    // simple terms mein: window ka size, title, sab yahan set karo
-    // ---------------------------------------------------------------
+    // constructor — jab MainFrame banega tab ye sab set hota hai
     public MainFrame() {
         setTitle("EventHub - Event Ticket Platform");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -30,7 +24,7 @@ public class MainFrame extends JFrame {
         setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        // root panel — sabka baap, iske andar sab kuch hai
+        // root panel — iske andar sab kuch hai
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(BG_COLOR);
         root.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
@@ -48,16 +42,13 @@ public class MainFrame extends JFrame {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         add(scrollPane);
         // scroll speed fast karo — default bohot slow hoti hai
-        // simple terms mein: ek baar scroll karo toh zyada pixels move ho
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
         setVisible(true);
     }
 
-    // ---------------------------------------------------------------
     // buildHeader() — upar wala hissa banata hai
     // simple terms mein: "EventHub" title aur tagline yahan dikhti hai
-    // ---------------------------------------------------------------
     private JPanel buildHeader() {
         JPanel panel = new JPanel();
         panel.setBackground(BG_COLOR);
@@ -70,7 +61,7 @@ public class MainFrame extends JFrame {
         title.setForeground(ACCENT_COLOR);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // chhoti tagline neeche title ke
+        //title ke neeche chhoti tagline  
         JLabel subtitle = new JLabel("Event Ticket Management Platform");
         subtitle.setFont(new Font("SansSerif", Font.PLAIN, 16));
         subtitle.setForeground(TEXT_SECONDARY);
@@ -83,34 +74,32 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    // ---------------------------------------------------------------
     // buildCardPanel() — teen role cards banata hai
     // simple terms mein: Organizer, Attendee, Staff — teeno ke liye alag card
-    // ---------------------------------------------------------------
     private JPanel buildCardPanel() {
         // teen cards side by side, 24px ka gap beech mein
         JPanel panel = new JPanel(new GridLayout(1, 3, 24, 0));
         panel.setBackground(BG_COLOR);
 
-        // Organizer card — event create karne wala
+        // Organizer card 
         panel.add(buildRoleCard(
-            "🎯  Organizer",
+            "Organizer",
             "Create and manage events,\nset ticket types & prices,\ntrack sales and revenue.",
             "Organizer Login",
             e -> openOrganizerLogin()
         ));
 
-        // Attendee card — ticket kharidne wala
+        // Attendee card 
         panel.add(buildRoleCard(
-            "🎟  Attendee",
+            "Attendee",
             "Browse upcoming events,\npurchase tickets,\nand view your bookings.",
             "Browse Events",
             e -> openAttendeeView()
         ));
 
-        // Staff card — entry pe ticket scan karne wala
+        // Staff card \
         panel.add(buildRoleCard(
-            "✅  Staff",
+            "Staff",
             "Scan QR codes at entry,\nvalidate tickets,\nand manage gate access.",
             "Validate Tickets",
             e -> openStaffView()
@@ -119,10 +108,7 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    // ---------------------------------------------------------------
     // buildRoleCard() — ek single card banata hai
-    // simple terms mein: title, description aur button — ek card ka structure
-    // ---------------------------------------------------------------
     private JPanel buildRoleCard(String title, String description, String btnLabel, ActionListener action) {
         JPanel card = new JPanel();
         card.setBackground(CARD_COLOR);
@@ -161,10 +147,8 @@ public class MainFrame extends JFrame {
         return card;
     }
 
-    // ---------------------------------------------------------------
     // buildButton() — styled button banata hai
     // simple terms mein: indigo color ka button, hover pe thoda dark hota hai
-    // ---------------------------------------------------------------
     private JButton buildButton(String label, ActionListener action) {
         JButton btn = new JButton(label);
         btn.setFont(new Font("SansSerif", Font.BOLD, 13));
@@ -191,16 +175,13 @@ public class MainFrame extends JFrame {
         return btn;
     }
 
-    // ---------------------------------------------------------------
-    // buildFooter() — sabse neeche wala hissa
-    // simple terms mein: sirf copyright text dikhta hai yahan
-    // ---------------------------------------------------------------
+    // buildFooter() 
     private JPanel buildFooter() {
         JPanel panel = new JPanel();
         panel.setBackground(BG_COLOR);
         panel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
 
-        JLabel label = new JLabel("© 2025 EventHub  |  College Java Project");
+        JLabel label = new JLabel("© 2026 EventHub  |  PBL Java Project");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
         label.setForeground(TEXT_SECONDARY);
         panel.add(label);
@@ -208,10 +189,7 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    // ---------------------------------------------------------------
     // navigation methods — kaunsa button kya karta hai
-    // simple terms mein: abhi placeholder hai, baad mein asli screen khulegi
-    // ---------------------------------------------------------------
 
     // Organizer button click — OrganizerPanel kholo
     private void openOrganizerLogin() {
@@ -219,7 +197,7 @@ public class MainFrame extends JFrame {
         new OrganizerPanel(); // organizer wali screen kholo
     }
 
-    // Attendee button click — abhi coming soon hai
+    // Attendee button click — new window create hojaegi
    private void openAttendeeView() {
     dispose();
     new AttendeePanel();
@@ -232,10 +210,7 @@ public class MainFrame extends JFrame {
             JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // ---------------------------------------------------------------
     // main() — yahan se program shuru hota hai
-    // simple terms mein: ye pehli cheez hai jo Java run karta hai
-    // ---------------------------------------------------------------
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
