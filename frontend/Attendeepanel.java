@@ -71,8 +71,6 @@ public class AttendeePanel extends JFrame {
         content.add(buildPurchasePanel());
         root.add(content, BorderLayout.CENTER);
 
-        root.add(buildStatusBar(), BorderLayout.SOUTH);
-
         JScrollPane scrollPane = new JScrollPane(root);
         scrollPane.setBackground(BG_COLOR);
         scrollPane.getViewport().setBackground(BG_COLOR);
@@ -151,11 +149,11 @@ public class AttendeePanel extends JFrame {
         });
 
         JScrollPane tableScroll = new JScrollPane(eventsTable);
+        tableScroll.getVerticalScrollBar().setUnitIncrement(16);
         tableScroll.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 90)));
         tableScroll.getViewport().setBackground(INPUT_BG);
-        tableScroll.getVerticalScrollBar().setUnitIncrement(16);
         panel.add(tableScroll, BorderLayout.CENTER);
-        panel.add(buildSearchBar(), BorderLayout.SOUTH);
+        panel.add(buildSearchBar(), BorderLayout.NORTH);
 
         return panel;
     }
@@ -164,7 +162,7 @@ public class AttendeePanel extends JFrame {
     private JPanel buildSearchBar() {
         JPanel panel = new JPanel(new BorderLayout(8, 0));
         panel.setBackground(CARD_COLOR);
-        panel.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
+        panel.setBorder(BorderFactory.createEmptyBorder(12, 0, 10, 0));
 
         JLabel lbl = new JLabel("🔍");
         lbl.setFont(new Font("SansSerif", Font.PLAIN, 16));
@@ -185,7 +183,7 @@ public class AttendeePanel extends JFrame {
             }
         });
 
-        panel.add(lbl, BorderLayout.WEST);
+        panel.add(lbl, BorderLayout.EAST);
         panel.add(searchField, BorderLayout.CENTER);
         return panel;
     }
@@ -314,12 +312,11 @@ public class AttendeePanel extends JFrame {
         purchasedTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 11));
 
         JScrollPane purchasedScroll = new JScrollPane(purchasedTable);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        purchasedScroll.getVerticalScrollBar().setUnitIncrement(16);
         purchasedScroll.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 90)));
         purchasedScroll.getViewport().setBackground(INPUT_BG);
         purchasedScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
         purchasedScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
-        purchasedScroll.getVerticalScrollBar().setUnitIncrement(16);
         panel.add(purchasedScroll);
 
         return panel;
@@ -376,7 +373,6 @@ public class AttendeePanel extends JFrame {
     // ticket purchase confirm karo
     private void purchaseTicket() {
         int row = eventsTable.getSelectedRow();
-        if (row == -1) { setStatus("Pehle koi event select karo!", ERROR_COLOR); return; }
 
         String eventName  = (String) eventsTableModel.getValueAt(row, 0);
         String ticketType = (String) ticketTypeCombo.getSelectedItem();
@@ -386,13 +382,11 @@ public class AttendeePanel extends JFrame {
             qty = Integer.parseInt(quantityField.getText().trim());
             if (qty <= 0) throw new NumberFormatException();
         } catch (NumberFormatException ex) {
-            setStatus("Valid quantity daalo (1 ya zyada).", ERROR_COLOR);
             return;
         }
 
         String total = priceLabel.getText().replace("Total: ", "");
         purchasedTableModel.addRow(new Object[]{eventName, ticketType, qty, total});
-        setStatus("Ticket booked! " + qty + "x " + ticketType + " for '" + eventName + "'", SUCCESS_COLOR);
         quantityField.setText("1");
         updatePrice();
     }
@@ -443,5 +437,3 @@ public class AttendeePanel extends JFrame {
     }
 }
 
-    
-}
