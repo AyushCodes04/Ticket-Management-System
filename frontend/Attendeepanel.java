@@ -159,5 +159,36 @@ public class AttendeePanel extends JFrame {
 
         return panel;
     }
+
+     // search bar — naam se events filter karo
+    private JPanel buildSearchBar() {
+        JPanel panel = new JPanel(new BorderLayout(8, 0));
+        panel.setBackground(CARD_COLOR);
+        panel.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
+
+        JLabel lbl = new JLabel("🔍");
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        lbl.setForeground(TEXT_SECONDARY);
+
+        JTextField searchField = new JTextField();
+        searchField.setBackground(INPUT_BG);
+        searchField.setForeground(TEXT_PRIMARY);
+        searchField.setCaretColor(TEXT_PRIMARY);
+        searchField.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(60, 60, 90)),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override public void keyReleased(KeyEvent e) {
+                filterEvents(searchField.getText().trim());
+            }
+        });
+
+        panel.add(lbl, BorderLayout.WEST);
+        panel.add(searchField, BorderLayout.CENTER);
+        return panel;
+    }
+
     
 }
