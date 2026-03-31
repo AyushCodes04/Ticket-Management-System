@@ -207,7 +207,7 @@ public class AttendeePanel extends JFrame {
         panel.add(heading);
         panel.add(Box.createVerticalStrut(20));
 
-        detailEventName = makeDetailLabel("Select an event from the list →", true);
+        detailEventName = makeDetailLabel("Select an event from the list", true);
         detailDate      = makeDetailLabel("Date: —", false);
         detailTime      = makeDetailLabel("Time: —", false);
         detailVenue     = makeDetailLabel("Venue: —", false);
@@ -396,6 +396,52 @@ public class AttendeePanel extends JFrame {
         quantityField.setText("1");
         updatePrice();
     }
+
+    // search box se events filter karo
+    private void filterEvents(String query) {
+        eventsTableModel.setRowCount(0);
+        for (String[] event : sampleEvents) {
+            if (event[0].toLowerCase().contains(query.toLowerCase())) {
+                eventsTableModel.addRow(event);
+            }
+        }
+    }
+
+    // detail labels banane ka helper
+    private JLabel makeDetailLabel(String text, boolean large) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("SansSerif", large ? Font.BOLD : Font.PLAIN, large ? 16 : 13));
+        lbl.setForeground(large ? TEXT_PRIMARY : TEXT_SECONDARY);
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return lbl;
+    }
+
+    // styled button banane ka helper
+    private JButton buildButton(String label, Color bg, ActionListener action) {
+        JButton btn = new JButton(label);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(bg);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(160, 36));
+        btn.addActionListener(action);
+        btn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { btn.setBackground(bg.darker()); }
+            @Override public void mouseExited(MouseEvent e)  { btn.setBackground(bg); }
+        });
+        return btn;
+    }
+
+    // testing ke liye seedha run karo
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        } catch (Exception ignored) {}
+        SwingUtilities.invokeLater(AttendeePanel::new);
+    }
+}
 
     
 }
