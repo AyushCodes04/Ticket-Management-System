@@ -190,5 +190,140 @@ public class AttendeePanel extends JFrame {
         return panel;
     }
 
+     // right side — ticket purchase form
+    private JPanel buildPurchasePanel() {
+        JPanel panel = new JPanel();
+        panel.setBackground(CARD_COLOR);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(60, 60, 90), 1),
+            BorderFactory.createEmptyBorder(24, 24, 24, 24)
+        ));
+
+        JLabel heading = new JLabel("Event Details & Purchase");
+        heading.setFont(new Font("SansSerif", Font.BOLD, 17));
+        heading.setForeground(TEXT_PRIMARY);
+        heading.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(heading);
+        panel.add(Box.createVerticalStrut(20));
+
+        detailEventName = makeDetailLabel("Select an event from the list →", true);
+        detailDate      = makeDetailLabel("Date: —", false);
+        detailTime      = makeDetailLabel("Time: —", false);
+        detailVenue     = makeDetailLabel("Venue: —", false);
+
+        panel.add(detailEventName);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(detailDate);
+        panel.add(Box.createVerticalStrut(4));
+        panel.add(detailTime);
+        panel.add(Box.createVerticalStrut(4));
+        panel.add(detailVenue);
+        panel.add(Box.createVerticalStrut(20));
+
+        JSeparator sep = new JSeparator();
+        sep.setForeground(new Color(60, 60, 90));
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(sep);
+        panel.add(Box.createVerticalStrut(16));
+
+        JLabel ticketLbl = new JLabel("Ticket Type");
+        ticketLbl.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        ticketLbl.setForeground(TEXT_SECONDARY);
+        ticketLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        ticketTypeCombo = new JComboBox<>();
+        ticketTypeCombo.setBackground(INPUT_BG);
+        ticketTypeCombo.setForeground(TEXT_PRIMARY);
+        ticketTypeCombo.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        ticketTypeCombo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        ticketTypeCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ticketTypeCombo.addActionListener(e -> updatePrice());
+
+        panel.add(ticketLbl);
+        panel.add(Box.createVerticalStrut(4));
+        panel.add(ticketTypeCombo);
+        panel.add(Box.createVerticalStrut(14));
+
+        JLabel qtyLbl = new JLabel("Quantity");
+        qtyLbl.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        qtyLbl.setForeground(TEXT_SECONDARY);
+        qtyLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        quantityField = new JTextField("1");
+        quantityField.setBackground(INPUT_BG);
+        quantityField.setForeground(TEXT_PRIMARY);
+        quantityField.setCaretColor(TEXT_PRIMARY);
+        quantityField.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        quantityField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(60, 60, 90)),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+        quantityField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        quantityField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        quantityField.addKeyListener(new KeyAdapter() {
+            @Override public void keyReleased(KeyEvent e) { updatePrice(); }
+        });
+
+        panel.add(qtyLbl);
+        panel.add(Box.createVerticalStrut(4));
+        panel.add(quantityField);
+        panel.add(Box.createVerticalStrut(16));
+
+        priceLabel = new JLabel("Total: ₹ —");
+        priceLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+        priceLabel.setForeground(SUCCESS_COLOR);
+        priceLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(priceLabel);
+        panel.add(Box.createVerticalStrut(20));
+
+        JButton buyBtn = buildButton("🎟  Buy Ticket", SUCCESS_COLOR, e -> purchaseTicket());
+        buyBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buyBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        panel.add(buyBtn);
+        panel.add(Box.createVerticalStrut(24));
+
+        JSeparator sep2 = new JSeparator();
+        sep2.setForeground(new Color(60, 60, 90));
+        sep2.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(sep2);
+        panel.add(Box.createVerticalStrut(16));
+
+        JLabel purchasedHeading = new JLabel("My Tickets (This Session)");
+        purchasedHeading.setFont(new Font("SansSerif", Font.BOLD, 14));
+        purchasedHeading.setForeground(TEXT_PRIMARY);
+        purchasedHeading.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(purchasedHeading);
+        panel.add(Box.createVerticalStrut(10));
+
+        String[] cols = {"Event", "Type", "Qty", "Total"};
+        purchasedTableModel = new DefaultTableModel(cols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+
+        JTable purchasedTable = new JTable(purchasedTableModel);
+        purchasedTable.setBackground(INPUT_BG);
+        purchasedTable.setForeground(TEXT_PRIMARY);
+        purchasedTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        purchasedTable.setRowHeight(28);
+        purchasedTable.setGridColor(new Color(50, 50, 75));
+        purchasedTable.getTableHeader().setBackground(new Color(40, 40, 65));
+        purchasedTable.getTableHeader().setForeground(TEXT_SECONDARY);
+        purchasedTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 11));
+
+        JScrollPane purchasedScroll = new JScrollPane(purchasedTable);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        purchasedScroll.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 90)));
+        purchasedScroll.getViewport().setBackground(INPUT_BG);
+        purchasedScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+        purchasedScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
+        purchasedScroll.getVerticalScrollBar().setUnitIncrement(16);
+        panel.add(purchasedScroll);
+
+        return panel;
+    }
+
     
 }
