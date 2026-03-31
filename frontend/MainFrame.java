@@ -220,11 +220,10 @@ public class MainFrame extends JFrame {
     }
 
     // Attendee button click — abhi coming soon hai
-    private void openAttendeeView() {
-        JOptionPane.showMessageDialog(this,
-            "Attendee / Browse Events screen coming soon!\n(Next commit)", "Coming Soon",
-            JOptionPane.INFORMATION_MESSAGE);
-    }
+   private void openAttendeeView() {
+    dispose();
+    new AttendeePanel();
+}
 
     // Staff button click — abhi coming soon hai
     private void openStaffView() {
