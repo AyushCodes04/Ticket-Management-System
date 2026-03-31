@@ -10,10 +10,7 @@ import java.util.ArrayList;
  
 public class AttendeePanel extends JFrame {
  
-    // ---------------------------------------------------------------
     // rang aur theme — poori app ka ek hi color scheme
-    // simple terms mein: MainFrame aur OrganizerPanel se same colors
-    // ---------------------------------------------------------------
     private static final Color BG_COLOR       = new Color(15, 15, 25);   // pura background
     private static final Color CARD_COLOR     = new Color(25, 25, 40);   // panel ka background
     private static final Color ACCENT_COLOR   = new Color(99, 102, 241); // indigo — main buttons
@@ -158,7 +155,7 @@ public class AttendeePanel extends JFrame {
         return panel;
     }
 
-     // search bar — naam se events filter karo
+     // search bar 
     private JPanel buildSearchBar() {
         JPanel panel = new JPanel(new BorderLayout(8, 0));
         panel.setBackground(CARD_COLOR);
@@ -428,7 +425,7 @@ public class AttendeePanel extends JFrame {
         return btn;
     }
 
-    // testing ke liye seedha run karo
+    // main func to run
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());

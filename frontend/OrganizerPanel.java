@@ -1,5 +1,5 @@
-// iska kaam hai — organizer ko event create karne dena
-// simple terms mein: ye woh screen hai jahan event ka naam, date, venue, aur tickets set karte hain
+//organizerPanel -  event create karne k liye panel
+// event ka naam, date, venue, aur tickets set karte hain
 // left side pe form hai, right side pe banaye hue events ki list
 
 import javax.swing.*;
@@ -110,8 +110,7 @@ public class OrganizerPanel extends JFrame {
         return panel;
     }
 
-    // buildFormPanel() — left side ka form yha organizer event ki saari details
-    // bharega
+    // buildFormPanel() — left side ka form yha organizer event ki saari details bharega
     private JPanel buildFormPanel() {
         JPanel panel = new JPanel();
         panel.setBackground(CARD_COLOR);
@@ -219,7 +218,7 @@ public class OrganizerPanel extends JFrame {
 
             // pehla column Boolean — taaki checkbox render ho
             @Override
-            public Class getColumnClass(int c) {
+            public Class<?> getColumnClass(int c) {
                 return c == 0 ? Boolean.class : String.class;
             }
         };
@@ -269,8 +268,7 @@ public class OrganizerPanel extends JFrame {
     }
 
     // buildStatusBar() — bottom m status strip
-    // simple terms mein: yahan dikhta hai kya hua — green matlab ok, red matlab
-    // error
+    // green matlab ok, red matlab error
     private JPanel buildStatusBar() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.setBackground(BG_COLOR);
@@ -284,11 +282,7 @@ public class OrganizerPanel extends JFrame {
         return panel;
     }
 
-    // ---------------------------------------------------------------
     // addFormField() — ek label + input box banata hai
-    // simple terms mein: ye helper hai — baar baar same code likhne ki zaroorat
-    // nahi
-    // ---------------------------------------------------------------
     private JTextField addFormField(JPanel parent, String label, String placeholder) {
         // upar label dikhao
         JLabel lbl = new JLabel(label);
