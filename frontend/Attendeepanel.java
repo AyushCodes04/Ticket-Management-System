@@ -354,7 +354,48 @@ public class AttendeePanel extends JFrame {
         }
 
         updatePrice();
-        setStatus("'" + name + "' selected — ticket type choose karo.", ACCENT_COLOR);
     }
+
+    // ticket type ya quantity change hone pe price recalculate karo
+    private void updatePrice() {
+        String selected = (String) ticketTypeCombo.getSelectedItem();
+        if (selected == null) { priceLabel.setText("Total: ₹ —"); return; }
+
+        try {
+            int rupeeIdx = selected.indexOf('₹');
+            int closeIdx = selected.indexOf(')');
+            if (rupeeIdx == -1 || closeIdx == -1) { priceLabel.setText("Total: ₹0"); return; }
+            double price = Double.parseDouble(selected.substring(rupeeIdx + 1, closeIdx).trim());
+            int qty = Integer.parseInt(quantityField.getText().trim());
+            priceLabel.setText("Total: ₹" + (int)(price * qty));
+        } catch (NumberFormatException ex) {
+            priceLabel.setText("Total: ₹ —");
+        }
+    }
+
+    // ticket purchase confirm karo
+    private void purchaseTicket() {
+        int row = eventsTable.getSelectedRow();
+        if (row == -1) { setStatus("Pehle koi event select karo!", ERROR_COLOR); return; }
+
+        String eventName  = (String) eventsTableModel.getValueAt(row, 0);
+        String ticketType = (String) ticketTypeCombo.getSelectedItem();
+        int qty;
+
+        try {
+            qty = Integer.parseInt(quantityField.getText().trim());
+            if (qty <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException ex) {
+            setStatus("Valid quantity daalo (1 ya zyada).", ERROR_COLOR);
+            return;
+        }
+
+        String total = priceLabel.getText().replace("Total: ", "");
+        purchasedTableModel.addRow(new Object[]{eventName, ticketType, qty, total});
+        setStatus("Ticket booked! " + qty + "x " + ticketType + " for '" + eventName + "'", SUCCESS_COLOR);
+        quantityField.setText("1");
+        updatePrice();
+    }
+
     
 }
