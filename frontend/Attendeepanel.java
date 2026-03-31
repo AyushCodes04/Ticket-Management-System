@@ -325,5 +325,36 @@ public class AttendeePanel extends JFrame {
         return panel;
     }
 
+     // sample events table mein load karo
+    private void loadSampleEvents() {
+        for (String[] event : sampleEvents) {
+            eventsTableModel.addRow(event);
+        }
+    }
+
+    // event select hone pe right side update karo
+    private void onEventSelected() {
+        int row = eventsTable.getSelectedRow();
+        if (row == -1) return;
+
+        String name    = (String) eventsTableModel.getValueAt(row, 0);
+        String date    = (String) eventsTableModel.getValueAt(row, 1);
+        String time    = (String) eventsTableModel.getValueAt(row, 2);
+        String venue   = (String) eventsTableModel.getValueAt(row, 3);
+        String tickets = (String) eventsTableModel.getValueAt(row, 4);
+
+        detailEventName.setText(name);
+        detailDate.setText("📅  " + date);
+        detailTime.setText("🕐  " + time);
+        detailVenue.setText("📍  " + venue);
+
+        ticketTypeCombo.removeAllItems();
+        for (String t : tickets.split(",")) {
+            ticketTypeCombo.addItem(t.trim());
+        }
+
+        updatePrice();
+        setStatus("'" + name + "' selected — ticket type choose karo.", ACCENT_COLOR);
+    }
     
 }
