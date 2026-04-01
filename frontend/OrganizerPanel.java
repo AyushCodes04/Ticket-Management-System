@@ -39,8 +39,6 @@ public class OrganizerPanel extends JFrame {
     // events table - created events ko show krne k liye
     private DefaultTableModel eventsTableModel;
 
-    // status label — neeche dikhta hai ki kya hua — success ya error
-    private JLabel statusLabel;
 
     // constructor — OrganizerPanel window ka setup
     // window ka size, title, layout sab yahan set hota hai
@@ -48,7 +46,7 @@ public class OrganizerPanel extends JFrame {
         setTitle("EventHub — Organizer Panel");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1000, 700);
-        setLocationRelativeTo(null); // screen ke beech mein khulega
+        setLocationRelativeTo(null); // screen ke center mein khulega
         setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
@@ -65,8 +63,6 @@ public class OrganizerPanel extends JFrame {
         content.add(buildFormPanel()); // left — form
         content.add(buildEventsTablePanel()); // right — table
         root.add(content, BorderLayout.CENTER);
-
-        root.add(buildStatusBar(), BorderLayout.SOUTH);
 
         JScrollPane scrollPane = new JScrollPane(root);
         scrollPane.setBackground(BG_COLOR);
@@ -208,7 +204,7 @@ public class OrganizerPanel extends JFrame {
         // table ke columns — kya kya info dikhegi
         String[] columns = { "", "Event Name", "Date", "Time", "Venue", "Ticket Types" };
 
-        // isCellEditable false — user table mein seedha edit nahi kar sakta
+        // isCellEditable false — user table mein seedha edit nahi kar sakta abhi
         eventsTableModel = new DefaultTableModel(columns, 0) {
             // sirf pehla column editable hoga— taaki checkbox click ho sake
             @Override
@@ -267,158 +263,8 @@ public class OrganizerPanel extends JFrame {
         return panel;
     }
 
-    // buildStatusBar() — bottom m status strip
-    // green matlab ok, red matlab error
-    private JPanel buildStatusBar() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.setBackground(BG_COLOR);
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-
-        statusLabel = new JLabel("Ready — fill in the form to create an event.");
-        statusLabel.setFont(new Font("SansSerif", Font.ITALIC, 12));
-        statusLabel.setForeground(TEXT_SECONDARY);
-        panel.add(statusLabel);
-
-        return panel;
-    }
-
-    // addFormField() — ek label + input box banata hai
-    private JTextField addFormField(JPanel parent, String label, String placeholder) {
-        // upar label dikhao
-        JLabel lbl = new JLabel(label);
-        lbl.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lbl.setForeground(TEXT_SECONDARY);
-        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // neeche input box
-        JTextField field = new JTextField();
-        field.setBackground(INPUT_BG);
-        field.setForeground(TEXT_PRIMARY);
-        field.setCaretColor(TEXT_PRIMARY); // cursor ka rang
-        field.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        field.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(60, 60, 90)),
-                BorderFactory.createEmptyBorder(6, 10, 6, 10)));
-        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setToolTipText(placeholder); // hover pe hint dikhta hai
-
-        parent.add(lbl);
-        parent.add(Box.createVerticalStrut(4));
-        parent.add(field);
-        parent.add(Box.createVerticalStrut(10));
-
-        return field;
-    }
-
-    // buildButton() — button ka color, size, hover effect — sab yahan set hota hai
-    private JButton buildButton(String label, Color bg, ActionListener action) {
-        JButton btn = new JButton(label);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
-        btn.setForeground(Color.WHITE);
-        btn.setBackground(bg);
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(160, 36));
-        btn.addActionListener(action);
-
-        // hover pe thoda dark ho jaega
-        btn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                btn.setBackground(bg.darker());
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                btn.setBackground(bg);
-            }
-        });
-
-        return btn;
-    }
-
     
-    // addTicketType() — type, price, qty check karne k baad — sahi hain toh list mein add krdega
-    private void addTicketType() {
-        String type = ticketTypeField.getText().trim();
-        String price = ticketPriceField.getText().trim();
-        String qty = ticketQtyField.getText().trim();
 
-        // koi field empty hogi to add nhi hoga
-        if (type.isEmpty() || price.isEmpty() || qty.isEmpty()) {
-            setStatus("Please fill in Type, Price, and Quantity.", ERROR_COLOR);
-            return;
-        }
-
-        // price aur qty validate hogi
-        try {
-            Double.parseDouble(price);
-            Integer.parseInt(qty);
-        } catch (NumberFormatException ex) {
-            setStatus("Price and Quantity must be valid numbers.", ERROR_COLOR);
-            return;
-        }
-
-        //agr inpout correct h — list mein add karo
-        ticketData.add(new String[] { type, price, qty });
-        ticketListModel.addElement(type + "  |  ₹" + price + "  |  Qty: " + qty);
-
-        //input fields clear hongi next ticket type ke liye
-        ticketTypeField.setText("");
-        ticketPriceField.setText("");
-        ticketQtyField.setText("");
-
-        setStatus("Ticket type '" + type + "' added.", ACCENT_COLOR);
-    }
-
-    // createEvent() — saari fields validate krke — sab theek hai toh event create kardo
-    private void createEvent() {
-        String name = eventNameField.getText().trim();
-        String date = eventDateField.getText().trim();
-        String time = eventTimeField.getText().trim();
-        String venue = eventVenueField.getText().trim();
-
-        // empty event field validation
-        if (name.isEmpty() || date.isEmpty() || time.isEmpty() || venue.isEmpty()) {
-            setStatus("Please fill in all event details.", ERROR_COLOR);
-            return;
-        }
-
-        // empty ticket data validation
-        if (ticketData.isEmpty()) {
-            setStatus("Add at least one ticket type before creating the event.", ERROR_COLOR);
-            return;
-        }
-
-        // saare ticket types ek string mein jodo — table mein dikhane ke liye
-        StringBuilder ticketSummary = new StringBuilder();
-        for (String[] t : ticketData) {
-            if (ticketSummary.length() > 0)
-                ticketSummary.append(", ");
-            ticketSummary.append(t[0]).append("(₹").append(t[1]).append(")");
-        }
-
-        // create new row
-        eventsTableModel.addRow(new Object[] { Boolean.FALSE, name, date, time, venue, ticketSummary.toString() });
-
-        // clear the form for next input
-        eventNameField.setText("");
-        eventDateField.setText("");
-        eventTimeField.setText("");
-        eventVenueField.setText("");
-        ticketListModel.clear();
-        ticketData.clear();
-
-        setStatus("Event '" + name + "' created successfully!", SUCCESS_COLOR);
-    }
-
-    // setStatus() — neeche status message update krdenge 
-    private void setStatus(String message, Color color) {
-        statusLabel.setText(message);
-        statusLabel.setForeground(color);
-    }
 
     // main() — create organizerPanel window
     public static void main(String[] args) {

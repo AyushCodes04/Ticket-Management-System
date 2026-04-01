@@ -1,5 +1,5 @@
 // AttendeePanel.java
-//ye woh screen hai jahan user events dekhta hai aur ticket book karta hai
+//yha user events dekhta hai aur ticket book karta hai
 // left side pe events ki list hai, right side pe selected event ki details aur ticket purchase form
  
 import javax.swing.*;
@@ -36,8 +36,6 @@ public class AttendeePanel extends JFrame {
     // purchased tickets ka record
     private DefaultTableModel purchasedTableModel;
 
-    // status bar
-    private JLabel statusLabel;
 
      // sample events — testing ke liye, baad mein database se aayenge
     private String[][] sampleEvents = {

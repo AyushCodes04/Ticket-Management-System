@@ -75,7 +75,7 @@ public class MainFrame extends JFrame {
     }
 
     // buildCardPanel() — teen role cards banata hai
-    // simple terms mein: Organizer, Attendee, Staff — teeno ke liye alag card
+    // Organizer, Attendee, Staff — teeno ke liye alag card
     private JPanel buildCardPanel() {
         // teen cards side by side, 24px ka gap beech mein
         JPanel panel = new JPanel(new GridLayout(1, 3, 24, 0));
@@ -148,7 +148,7 @@ public class MainFrame extends JFrame {
     }
 
     // buildButton() — styled button banata hai
-    // simple terms mein: indigo color ka button, hover pe thoda dark hota hai
+    // indigo color ka button, hover pe thoda dark hota hai
     private JButton buildButton(String label, ActionListener action) {
         JButton btn = new JButton(label);
         btn.setFont(new Font("SansSerif", Font.BOLD, 13));
@@ -216,7 +216,7 @@ public class MainFrame extends JFrame {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         } catch (Exception ignored) {}
 
-        // SwingUtilities — Swing ko sahi thread pe chalao, ye best practice hai
+        // SwingUtilities — Swing ko  Event Dispatch Thread pe chalao, ye best practice hai
         SwingUtilities.invokeLater(MainFrame::new);
     }
 }
