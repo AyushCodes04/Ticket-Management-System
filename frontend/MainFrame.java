@@ -193,8 +193,9 @@ public class MainFrame extends JFrame {
 
     // Organizer button click — OrganizerPanel kholo
     private void openOrganizerLogin() {
-        dispose();           // ye window band karo
-        new OrganizerPanel(); // organizer wali screen kholo
+       JOptionPane.showMessageDialog(this,
+            "Staff / organizerPanel screen coming soon!\n(Next commit)", "Coming Soon",
+            JOptionPane.INFORMATION_MESSAGE);
     }
 
     // Attendee button click — new window create hojaegi
