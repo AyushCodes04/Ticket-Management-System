@@ -38,7 +38,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody AuthDTO.RegisterRequest request) {
-        User user=new User();
+        User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
@@ -46,5 +46,5 @@ public class AuthController {
 
         userService.registerUser(user);
         return ResponseEntity.ok("User registered successfully");
-    }<<<<<<<HEAD
-}=======}>>>>>>>1e16 edb193b5faf9af59217812a25a816fd88fd4
+    }
+}

@@ -1,93 +1,87 @@
-// UserService.java
-// kaam: dummy login/signup simulation + session state manage karta hai
-//
 package service;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import config.ApiConfig;
 import model.User;
+import util.HttpClientUtil;
 
 public class UserService {
     private User currentUser;
+    private String token;
 
-    private static final String ORGANIZER_EMAIL = "organizer@eventhub.com";
-    private static final String ORGANIZER_PASSWORD = "organizer123";
-    private static final String ATTENDEE_EMAIL = "aman@example.com";
-    private static final String ATTENDEE_PASSWORD = "attendee123";
-    private static final String STAFF_EMAIL = "staff@eventhub.com";
-    private static final String STAFF_PASSWORD = "staff123";
-
-    // dummy ids
-    private static final String ORG_ID = "ORG-001";
-    private static final String ATD_ID = "ATD-001";
-    private static final String STF_ID = "STF-001";
-
-    /**
-     * This method returns the current logged in user.
-     */
     public User getCurrentUser() {
         return currentUser;
     }
 
-    // session clear karta hai
-    public void signOut() {
-        currentUser = null;
+    public String getToken() {
+        return token;
     }
 
-    // role + credentials validate karke user set karta hai
+    public void signOut() {
+        currentUser = null;
+        token = null;
+    }
+
     public User login(String role, String email, String password) {
         if (role == null || email == null || password == null) {
             return null;
         }
         String normalizedEmail = email.trim().toLowerCase();
-        String normalizedRole = role.trim().toUpperCase();
         String normalizedPassword = password;
 
-        return switch (normalizedRole) {
-            case "ORGANIZER" -> {
-                if (ORGANIZER_EMAIL.equals(normalizedEmail) && ORGANIZER_PASSWORD.equals(normalizedPassword)) {
-                    currentUser = new User(ORG_ID, "Organizer", ORGANIZER_EMAIL, "ORGANIZER");
-                    yield currentUser;
-                }
-                yield null;
+        try {
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty("username", normalizedEmail);
+            requestBody.addProperty("password", normalizedPassword);
+
+            String responseStr = HttpClientUtil.post(ApiConfig.AUTH_LOGIN, requestBody.toString(), null);
+            JsonObject responseObj = JsonParser.parseString(responseStr).getAsJsonObject();
+
+            this.token = responseObj.get("token").getAsString();
+            String authority = responseObj.get("role").getAsString(); // e.g. "ROLE_ORGANIZER"
+            String cleanedRole = authority.replace("ROLE_", "");
+
+            // If the login succeeded but the returned role does not match what the user selected on the login page, reject login
+            if (!cleanedRole.equalsIgnoreCase(role)) {
+                token = null;
+                return null;
             }
-            case "ATTENDEE" -> {
-                if (ATTENDEE_EMAIL.equals(normalizedEmail) && ATTENDEE_PASSWORD.equals(normalizedPassword)) {
-                    currentUser = new User(ATD_ID, "Aman Sharma", ATTENDEE_EMAIL, "ATTENDEE");
-                    yield currentUser;
-                }
-                yield null;
+
+            // Capitalize display name
+            String displayName = cleanedRole.charAt(0) + cleanedRole.substring(1).toLowerCase();
+            if ("Attendee".equalsIgnoreCase(displayName)) {
+                displayName = "Aman Sharma"; // Match default UI expectation
+            } else if ("Staff".equalsIgnoreCase(displayName)) {
+                displayName = "Gate Staff";
             }
-            case "STAFF" -> {
-                if (STAFF_EMAIL.equals(normalizedEmail) && STAFF_PASSWORD.equals(normalizedPassword)) {
-                    currentUser = new User(STF_ID, "Gate Staff", STAFF_EMAIL, "STAFF");
-                    yield currentUser;
-                }
-                yield null;
-            }
-            default -> null;
-        };
+
+            currentUser = new User(normalizedEmail, displayName, normalizedEmail, cleanedRole);
+            return currentUser;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    // organizer card/Ui ke liye relevant user return karta hai
     public User getOrganizerUser() {
         if (currentUser != null && "ORGANIZER".equalsIgnoreCase(currentUser.getRole())) {
             return currentUser;
         }
-        return new User(ORG_ID, "Organizer", ORGANIZER_EMAIL, "ORGANIZER");
+        return new User("organizer@eventhub.com", "Organizer", "organizer@eventhub.com", "ORGANIZER");
     }
 
-    // attendee card/Ui ke liye relevant user return karta hai
     public User getAttendeeUser() {
         if (currentUser != null && "ATTENDEE".equalsIgnoreCase(currentUser.getRole())) {
             return currentUser;
         }
-        return new User(ATD_ID, "Aman Sharma", ATTENDEE_EMAIL, "ATTENDEE");
+        return new User("aman@example.com", "Aman Sharma", "aman@example.com", "ATTENDEE");
     }
 
-    // staff card/Ui ke liye relevant user return karta hai
     public User getStaffUser() {
         if (currentUser != null && "STAFF".equalsIgnoreCase(currentUser.getRole())) {
             return currentUser;
         }
-        return new User(STF_ID, "Gate Staff", STAFF_EMAIL, "STAFF");
+        return new User("staff@eventhub.com", "Gate Staff", "staff@eventhub.com", "STAFF");
     }
 }

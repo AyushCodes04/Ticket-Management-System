@@ -8,32 +8,34 @@ import java.time.LocalDateTime;
 public class TicketDTO {
 
     private Long id;
-    private String title;
-    private String description;
-    private Ticket.Status status;
-    private Ticket.Priority priority;
+    private String bookingRef;
+    private String eventId;
+    private String eventName;
+    private String ticketType;
+    private int quantity;
+    private double totalAmount;
+    private String attendeeName;
+    private String attendeeEmail;
+    private String status;
+    private LocalDateTime purchasedAt;
     private String qrCode;
     private Boolean isUsed;
-    private UserDTO createdBy;
-    private UserDTO assignedTo;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     public static TicketDTO fromTicket(Ticket ticket) {
-        TicketDTO dto=new TicketDTO();
+        TicketDTO dto = new TicketDTO();
         dto.setId(ticket.getId());
-        dto.setTitle(ticket.getTitle());
-        dto.setDescription(ticket.getDescription());
+        dto.setBookingRef(ticket.getBookingRef());
+        dto.setEventId(ticket.getEventId());
+        dto.setEventName(ticket.getEventName());
+        dto.setTicketType(ticket.getTicketType());
+        dto.setQuantity(ticket.getQuantity());
+        dto.setTotalAmount(ticket.getTotalAmount());
+        dto.setAttendeeName(ticket.getAttendeeName());
+        dto.setAttendeeEmail(ticket.getAttendeeEmail());
         dto.setStatus(ticket.getStatus());
-        dto.setPriority(ticket.getPriority());
+        dto.setPurchasedAt(ticket.getPurchasedAt());
         dto.setQrCode(ticket.getQrCode());
         dto.setIsUsed(ticket.getIsUsed());
-        dto.setCreatedAt(ticket.getCreatedAt());
-        dto.setUpdatedAt(ticket.getUpdatedAt());
-        if(ticket.getCreatedBy() != null)
-            dto.setCreatedBy(UserDTO.fromUser(ticket.getCreatedBy()));
-        if(ticket.getAssignedTo() != null)
-            dto.setAssignedTo(UserDTO.fromUser(ticket.getAssignedTo()));
         return dto;
     }
 }

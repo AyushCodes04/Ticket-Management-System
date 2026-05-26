@@ -1,113 +1,84 @@
 package service;
 
-import data.DummyData;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import config.ApiConfig;
 import model.Event;
+import util.HttpClientUtil;
 
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
-/**
- * This class manages event data using in-memory dummy records.
- */
 public class EventService {
-    private final List<Event> events = new ArrayList<>();
+    private final Gson gson;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    /**
-     * This constructor loads sample events.
-     */
     public EventService() {
-        seedEvents();
+        this.gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
+                .registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>) (json, typeOfT, context) -> LocalDateTime.parse(json.getAsString()))
+                .create();
     }
 
-    /**
-     * This method returns all events.
-     */
     public List<Event> getAllEvents() {
-        // TODO: Replace with database call
-        return events.stream()
-            .sorted(Comparator.comparing(this::safeDate))
-            .map(Event::copy)
-            .toList();
-    }
-
-    /**
-     * This method finds one event by id.
-     */
-    public Event getEventById(String id) {
-        // TODO: Replace with database call
-        return events.stream()
-            .filter(event -> event.getId().equals(id))
-            .findFirst()
-            .map(Event::copy)
-            .orElse(null);
-    }
-
-    /**
-     * This method creates a new event.
-     */
-    public void createEvent(Event event) {
-        // TODO: Replace with database call
-        Event stored = event.copy();
-        stored.setId(UUID.randomUUID().toString());
-        stored.setCreatedAt(LocalDateTime.now());
-        stored.setStatus(resolveStatus(stored.getDate()));
-        events.add(stored);
-    }
-
-    /**
-     * This method deletes an event by id.
-     */
-    public void deleteEvent(String id) {
-        // TODO: Replace with database call
-        events.removeIf(event -> event.getId().equals(id));
-    }
-
-    /**
-     * This method updates sold quantities after a purchase.
-     */
-    public void incrementSoldTickets(String eventId, String ticketTypeName, int quantity) {
-        // TODO: Replace with database call
-        Optional<Event> eventOptional = events.stream().filter(item -> item.getId().equals(eventId)).findFirst();
-        if (eventOptional.isEmpty()) {
-            return;
-        }
-        Event event = eventOptional.get();
-        for (Event.TicketType ticketType : event.getTicketTypes()) {
-            if (ticketType.getTypeName().equalsIgnoreCase(ticketTypeName)) {
-                ticketType.setSoldQuantity(ticketType.getSoldQuantity() + quantity);
-                break;
+        try {
+            String json = HttpClientUtil.get(ApiConfig.EVENTS, null);
+            Type listType = new TypeToken<ArrayList<Event>>(){}.getType();
+            List<Event> list = gson.fromJson(json, listType);
+            if (list == null) {
+                return new ArrayList<>();
             }
+            return list.stream()
+                    .sorted(Comparator.comparing(this::safeDate))
+                    .toList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 
-    /**
-     * This method seeds the application with sample events.
-     */
-    private void seedEvents() {
-        // hardcoded dummy events ka source DummyData hi rahega
-        events.clear();
-        events.addAll(DummyData.getEvents());
+    public Event getEventById(String id) {
+        try {
+            String json = HttpClientUtil.get(ApiConfig.EVENTS + "/" + id, null);
+            return gson.fromJson(json, Event.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    /**
-     * This method creates one sample event.
-     */
-    private Event createSeedEvent(String id, String name, String description, String date, String time,
-                                  String venueName, String venueAddress, String category, int maxCapacity,
-                                  List<Event.TicketType> ticketTypes, String status) {
-        return new Event(id, name, description, date, time, venueName, venueAddress, category, maxCapacity, ticketTypes, status, LocalDateTime.now().minusDays(10));
+    public void createEvent(Event event) {
+        try {
+            if (event.getId() == null || event.getId().isBlank()) {
+                event.setId(java.util.UUID.randomUUID().toString());
+            }
+            event.setCreatedAt(LocalDateTime.now());
+            event.setStatus(resolveStatus(event.getDate()));
+            String jsonBody = gson.toJson(event);
+            HttpClientUtil.post(ApiConfig.EVENTS, jsonBody, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * This method safely parses the date for sorting.
-     */
+    public void deleteEvent(String id) {
+        try {
+            HttpClientUtil.delete(ApiConfig.EVENTS + "/" + id, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void incrementSoldTickets(String eventId, String ticketTypeName, int quantity) {
+        // Backend handles sold quantities automatically inside purchase transaction.
+        // Keeping this method signature to avoid compilation issues.
+    }
+
     private LocalDate safeDate(Event event) {
         try {
             return LocalDate.parse(event.getDate(), formatter);
@@ -116,9 +87,6 @@ public class EventService {
         }
     }
 
-    /**
-     * This method calculates the event status from its date.
-     */
     private String resolveStatus(String date) {
         try {
             LocalDate eventDate = LocalDate.parse(date, formatter);

@@ -24,6 +24,7 @@ import util.Theme;
 public class StaffScreen implements Navigator.Screen {
     private final EventService eventService;
     private final TicketService ticketService;
+    private final UserService userService;
     private final User staffUser;
 
     private VBox resultArea;
@@ -39,6 +40,7 @@ public class StaffScreen implements Navigator.Screen {
     public StaffScreen(EventService eventService, TicketService ticketService, UserService userService) {
         this.eventService = eventService;
         this.ticketService = ticketService;
+        this.userService = userService;
         this.staffUser = userService.getStaffUser();
     }
 

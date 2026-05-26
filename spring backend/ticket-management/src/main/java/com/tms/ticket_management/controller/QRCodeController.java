@@ -44,7 +44,7 @@ public class QRCodeController {
 
     @PostMapping("/scan/{qrCode}")
     public ResponseEntity<TicketDTO> scanQRCode(@PathVariable String qrCode) {
-        Ticket ticket = ticketService.markTicketAsUsed(qrCode);
+        Ticket ticket = ticketService.markTicketAsUsedByQRCode(qrCode);
         return ResponseEntity.ok(TicketDTO.fromTicket(ticket));
     }
 }

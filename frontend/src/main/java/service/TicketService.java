@@ -1,190 +1,162 @@
 package service;
 
-import data.DummyData;
-import model.Event;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import config.ApiConfig;
 import model.Ticket;
+import util.HttpClientUtil;
 
+import java.lang.reflect.Type;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
-/**
- * This class handles ticket purchase and validation using dummy in-memory data.
- */
 public class TicketService {
     private final EventService eventService;
-    private final List<Ticket> purchasedTickets = new ArrayList<>();
-    private final List<ValidationResult> validationHistory = new ArrayList<>();
-    private final Random random = new Random();
+    private final Gson gson;
 
-    /**
-     * This constructor prepares sample bookings.
-     */
     public TicketService(EventService eventService) {
         this.eventService = eventService;
-        seedSampleTickets();
+        this.gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
+                .registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>) (json, typeOfT, context) -> LocalDateTime.parse(json.getAsString()))
+                .create();
     }
 
-    /**
-     * This method purchases tickets and returns a booking reference.
-     */
     public String purchaseTicket(String eventId, String type, int qty, String name, String email) {
-        // TODO: Replace with database call
-        return purchaseSingleTicket(eventId, type, qty, name, email, generateBookingRef());
+        Map<String, Integer> quantities = new HashMap<>();
+        quantities.put(type, qty);
+        return purchaseTickets(eventId, quantities, name, email);
     }
 
-    /**
-     * This method purchases multiple ticket types under one booking reference.
-     */
     public String purchaseTickets(String eventId, Map<String, Integer> quantities, String name, String email) {
-        // TODO: Replace with database call
-        String bookingRef = generateBookingRef();
-        for (Map.Entry<String, Integer> entry : quantities.entrySet()) {
-            if (entry.getValue() > 0) {
-                purchaseSingleTicket(eventId, entry.getKey(), entry.getValue(), name, email, bookingRef);
+        try {
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty("eventId", eventId);
+            requestBody.addProperty("name", name);
+            requestBody.addProperty("email", email);
+
+            JsonObject qtyJson = new JsonObject();
+            for (Map.Entry<String, Integer> entry : quantities.entrySet()) {
+                qtyJson.addProperty(entry.getKey(), entry.getValue());
             }
+            requestBody.add("quantities", qtyJson);
+
+            String response = HttpClientUtil.post(ApiConfig.TICKETS_PURCHASE, requestBody.toString(), null);
+            JsonObject responseObj = JsonParser.parseString(response).getAsJsonObject();
+            return responseObj.get("bookingRef").getAsString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException(e.getMessage());
         }
-        return bookingRef;
     }
 
-    /**
-     * This method purchases one ticket line using a supplied booking reference.
-     */
-    private String purchaseSingleTicket(String eventId, String type, int qty, String name, String email, String bookingRef) {
-        Event event = eventService.getEventById(eventId);
-        if (event == null) {
-            throw new IllegalArgumentException("Event not found");
-        }
-        Event.TicketType ticketType = event.getTicketTypes().stream()
-            .filter(item -> item.getTypeName().equalsIgnoreCase(type))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Ticket type not found"));
-        int remaining = ticketType.getTotalQuantity() - ticketType.getSoldQuantity();
-        if (qty <= 0 || qty > remaining) {
-            throw new IllegalArgumentException("Requested quantity is not available");
-        }
-        Ticket ticket = new Ticket(
-            bookingRef,
-            event.getId(),
-            event.getName(),
-            ticketType.getTypeName(),
-            qty,
-            ticketType.getPrice() * qty,
-            name,
-            email.toLowerCase(Locale.ROOT),
-            "CONFIRMED",
-            LocalDateTime.now()
-        );
-        purchasedTickets.add(ticket);
-        eventService.incrementSoldTickets(eventId, type, qty);
-        return bookingRef;
-    }
-
-    /**
-     * This method validates a booking reference and stores the validation result.
-     */
     public ValidationResult validateTicket(String bookingRef) {
-        // TODO: Replace with database call
-        String normalized = bookingRef == null ? "" : bookingRef.trim().toUpperCase(Locale.ROOT);
-        Ticket ticket = purchasedTickets.stream()
-            .filter(item -> item.getBookingRef().equalsIgnoreCase(normalized))
-            .findFirst()
-            .orElse(null);
-        ValidationResult result;
-        if (ticket == null) {
-            result = new ValidationResult(LocalDateTime.now(), normalized, "", "", "INVALID", "This booking reference was not found", null);
-        } else if ("USED".equalsIgnoreCase(ticket.getStatus())) {
-            result = new ValidationResult(LocalDateTime.now(), ticket.getBookingRef(), ticket.getAttendeeName(), ticket.getEventName(), "ALREADY USED", "This ticket has already been used", ticket);
-        } else {
-            result = new ValidationResult(LocalDateTime.now(), ticket.getBookingRef(), ticket.getAttendeeName(), ticket.getEventName(), "VALID", "Ticket is ready for entry", ticket);
+        try {
+            String encodedRef = URLEncoder.encode(bookingRef, StandardCharsets.UTF_8);
+            String url = ApiConfig.TICKETS_VALIDATE + "/" + encodedRef;
+            String response = HttpClientUtil.get(url, null);
+
+            JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
+            LocalDateTime time = obj.has("time") && !obj.get("time").isJsonNull() 
+                    ? LocalDateTime.parse(obj.get("time").getAsString()) 
+                    : LocalDateTime.now();
+            String ref = obj.has("bookingRef") && !obj.get("bookingRef").isJsonNull() ? obj.get("bookingRef").getAsString() : "";
+            String attName = obj.has("attendeeName") && !obj.get("attendeeName").isJsonNull() ? obj.get("attendeeName").getAsString() : "";
+            String evtName = obj.has("eventName") && !obj.get("eventName").isJsonNull() ? obj.get("eventName").getAsString() : "";
+            String status = obj.has("status") && !obj.get("status").isJsonNull() ? obj.get("status").getAsString() : "INVALID";
+            String msg = obj.has("message") && !obj.get("message").isJsonNull() ? obj.get("message").getAsString() : "";
+
+            Ticket ticket = null;
+            if (obj.has("ticket") && !obj.get("ticket").isJsonNull()) {
+                ticket = gson.fromJson(obj.get("ticket"), Ticket.class);
+            }
+
+            return new ValidationResult(time, ref, attName, evtName, status, msg, ticket);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ValidationResult(LocalDateTime.now(), bookingRef, "", "", "INVALID", e.getMessage(), null);
         }
-        validationHistory.add(0, result);
-        if (validationHistory.size() > 10) {
-            validationHistory.remove(validationHistory.size() - 1);
-        }
-        return result;
     }
 
-    /**
-     * This method returns tickets by attendee email.
-     */
     public List<Ticket> getTicketsByAttendee(String email) {
-        // TODO: Replace with database call
-        String normalizedEmail = email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
-        return purchasedTickets.stream()
-            .filter(ticket -> ticket.getAttendeeEmail().equalsIgnoreCase(normalizedEmail))
-            .sorted(Comparator.comparing(Ticket::getPurchasedAt).reversed())
-            .toList();
+        try {
+            String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
+            String url = ApiConfig.TICKETS_ATTENDEE + "?email=" + encodedEmail;
+            String response = HttpClientUtil.get(url, null);
+            Type listType = new TypeToken<ArrayList<Ticket>>(){}.getType();
+            List<Ticket> list = gson.fromJson(response, listType);
+            return list != null ? list : new ArrayList<>();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
-    /**
-     * This method marks a ticket as used.
-     */
     public void markTicketAsUsed(String bookingRef) {
-        // TODO: Replace with database call
-        purchasedTickets.stream()
-            .filter(ticket -> ticket.getBookingRef().equalsIgnoreCase(bookingRef))
-            .findFirst()
-            .ifPresent(ticket -> ticket.setStatus("USED"));
+        try {
+            String encodedRef = URLEncoder.encode(bookingRef, StandardCharsets.UTF_8);
+            String url = ApiConfig.TICKETS_USE + "/" + encodedRef;
+            HttpClientUtil.post(url, "", null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * This method returns the recent validation history.
-     */
     public List<ValidationResult> getRecentValidations() {
-        // TODO: Replace with database call
-        return new ArrayList<>(validationHistory);
+        try {
+            String response = HttpClientUtil.get(ApiConfig.VALIDATIONS_RECENT, null);
+            JsonArray arr = JsonParser.parseString(response).getAsJsonArray();
+            List<ValidationResult> results = new ArrayList<>();
+            for (JsonElement el : arr) {
+                JsonObject obj = el.getAsJsonObject();
+                LocalDateTime time = obj.has("time") && !obj.get("time").isJsonNull() 
+                        ? LocalDateTime.parse(obj.get("time").getAsString()) 
+                        : LocalDateTime.now();
+                String ref = obj.has("bookingRef") && !obj.get("bookingRef").isJsonNull() ? obj.get("bookingRef").getAsString() : "";
+                String attName = obj.has("attendeeName") && !obj.get("attendeeName").isJsonNull() ? obj.get("attendeeName").getAsString() : "";
+                String evtName = obj.has("eventName") && !obj.get("eventName").isJsonNull() ? obj.get("eventName").getAsString() : "";
+                String status = obj.has("status") && !obj.get("status").isJsonNull() ? obj.get("status").getAsString() : "";
+                String msg = obj.has("message") && !obj.get("message").isJsonNull() ? obj.get("message").getAsString() : "";
+
+                Ticket ticket = null;
+                if (obj.has("ticket") && !obj.get("ticket").isJsonNull()) {
+                    ticket = gson.fromJson(obj.get("ticket"), Ticket.class);
+                }
+
+                results.add(new ValidationResult(time, ref, attName, evtName, status, msg, ticket));
+            }
+            return results;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
-    /**
-     * This method returns the total validated count for today.
-     */
     public long getTotalValidatedToday() {
-        // TODO: Replace with database call
-        return validationHistory.stream().filter(item -> item.getTime().toLocalDate().isEqual(LocalDate.now())).count();
+        try {
+            String response = HttpClientUtil.get(ApiConfig.VALIDATIONS_TODAY, null);
+            return Long.parseLong(response.trim());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
-    /**
-     * This method returns the total count for one validation status today.
-     */
     public long getCountForStatusToday(String status) {
-        // TODO: Replace with database call
-        return validationHistory.stream()
-            .filter(item -> item.getTime().toLocalDate().isEqual(LocalDate.now()))
-            .filter(item -> Objects.equals(item.getStatus(), status))
-            .count();
+        try {
+            String url = ApiConfig.VALIDATIONS_STATUS_TODAY + "/" + status;
+            String response = HttpClientUtil.get(url, null);
+            return Long.parseLong(response.trim());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
-    /**
-     * This method adds sample bookings for attendee and staff flows.
-     */
-    private void seedSampleTickets() {
-        purchasedTickets.clear();
-        purchasedTickets.addAll(DummyData.getTickets());
-        validationHistory.clear();
-        validateTicket("EH-2025-000111");
-        validateTicket("EH-2025-000222");
-        validateTicket("ZZ99-1111");
-    }
-
-    /**
-     * This method generates a simple booking reference.
-     */
-    private String generateBookingRef() {
-        return "EH" + LocalDate.now().getYear() % 100 + "-" + (1000 + random.nextInt(9000));
-    }
-
-    /**
-     * This class stores a validation attempt for the staff panel.
-     */
     public static class ValidationResult {
         private final LocalDateTime time;
         private final String bookingRef;
@@ -194,9 +166,6 @@ public class TicketService {
         private final String message;
         private final Ticket ticket;
 
-        /**
-         * This constructor creates a validation result.
-         */
         public ValidationResult(LocalDateTime time, String bookingRef, String attendeeName, String eventName,
                                 String status, String message, Ticket ticket) {
             this.time = time;
@@ -208,58 +177,34 @@ public class TicketService {
             this.ticket = ticket;
         }
 
-        /**
-         * This method returns the validation time.
-         */
         public LocalDateTime getTime() {
             return time;
         }
 
-        /**
-         * This method returns the booking reference.
-         */
         public String getBookingRef() {
             return bookingRef;
         }
 
-        /**
-         * This method returns the attendee name.
-         */
         public String getAttendeeName() {
             return attendeeName;
         }
 
-        /**
-         * This method returns the event name.
-         */
         public String getEventName() {
             return eventName;
         }
 
-        /**
-         * This method returns the validation status.
-         */
         public String getStatus() {
             return status;
         }
 
-        /**
-         * This method returns the result message.
-         */
         public String getMessage() {
             return message;
         }
 
-        /**
-         * This method returns the related ticket if available.
-         */
         public Ticket getTicket() {
             return ticket;
         }
 
-        /**
-         * This method formats the validation time for the table.
-         */
         public String getFormattedTime() {
             return time.format(DateTimeFormatter.ofPattern("hh:mm a"));
         }

@@ -1,15 +1,15 @@
 package com.tms.ticket_management.controller;
 
-import com.tms.ticket_management.dto.TicketDTO;
 import com.tms.ticket_management.model.Ticket;
-import com.tms.ticket_management.model.User;
+import com.tms.ticket_management.model.ValidationResultEntity;
 import com.tms.ticket_management.service.TicketService;
-import com.tms.ticket_management.service.UserService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -17,60 +17,54 @@ import java.util.List;
 public class TicketController {
 
     private final TicketService ticketService;
-    private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<TicketDTO> createTicket(@RequestBody Ticket ticket, Authentication authentication) {
-        String username=authentication.getName();
-        // tickets.created_by is NOT NULL in DB, so we must set it from the authenticated user.
-        User user=userService.getUserByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found: "+username));
-        ticket.setCreatedBy(user);
-        return ResponseEntity.ok(TicketDTO.fromTicket(ticketService.createTicket(ticket)));
+    @PostMapping("/purchase")
+    public ResponseEntity<Map<String, String>> purchaseTickets(@RequestBody PurchaseRequest request) {
+        String bookingRef = ticketService.purchaseTickets(
+                request.getEventId(),
+                request.getQuantities(),
+                request.getName(),
+                request.getEmail()
+        );
+        return ResponseEntity.ok(Map.of("bookingRef", bookingRef));
     }
 
-    @GetMapping
-    public ResponseEntity<List<TicketDTO>> getAllTickets() {
-        return ResponseEntity.ok(ticketService.getAllTickets()
-                .stream()
-                .map(TicketDTO::fromTicket)
-                .toList());
+    @GetMapping("/attendee")
+    public ResponseEntity<List<Ticket>> getTicketsByAttendee(@RequestParam String email) {
+        return ResponseEntity.ok(ticketService.getTicketsByAttendee(email));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TicketDTO> getTicketById(@PathVariable Long id) {
-        return ticketService.getTicketById(id)
-                .map(TicketDTO::fromTicket)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/validate/{bookingRef}")
+    public ResponseEntity<ValidationResultEntity> validateTicket(@PathVariable String bookingRef) {
+        return ResponseEntity.ok(ticketService.validateTicket(bookingRef));
     }
 
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<TicketDTO>> getTicketsByStatus(@PathVariable Ticket.Status status) {
-        return ResponseEntity.ok(ticketService.getTicketsByStatus(status)
-                .stream()
-                .map(TicketDTO::fromTicket)
-                .toList());
+    @PostMapping("/use/{bookingRef}")
+    public ResponseEntity<Void> markTicketAsUsed(@PathVariable String bookingRef) {
+        ticketService.markTicketAsUsed(bookingRef);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<TicketDTO>> getTicketsByUser(@PathVariable Long userId) {
-        return userService.getUserById(userId)
-                .map(user -> ResponseEntity.ok(ticketService.getTicketsByUser(user)
-                        .stream()
-                        .map(TicketDTO::fromTicket)
-                        .toList()))
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/validations/today")
+    public ResponseEntity<Long> getTotalValidatedToday() {
+        return ResponseEntity.ok(ticketService.getTotalValidatedToday());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TicketDTO> updateTicket(@PathVariable Long id, @RequestBody Ticket ticket) {
-        return ResponseEntity.ok(TicketDTO.fromTicket(ticketService.updateTicket(id, ticket)));
+    @GetMapping("/validations/status-today/{status}")
+    public ResponseEntity<Long> getCountForStatusToday(@PathVariable String status) {
+        return ResponseEntity.ok(ticketService.getCountForStatusToday(status));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTicket(@PathVariable Long id) {
-        ticketService.deleteTicket(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/validations/recent")
+    public ResponseEntity<List<ValidationResultEntity>> getRecentValidations() {
+        return ResponseEntity.ok(ticketService.getRecentValidations());
+    }
+
+    @Data
+    public static class PurchaseRequest {
+        private String eventId;
+        private Map<String, Integer> quantities;
+        private String name;
+        private String email;
     }
 }
