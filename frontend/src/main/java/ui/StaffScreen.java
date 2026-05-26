@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.util.Duration;
+import service.EventService;
 import model.Ticket;
 import model.User;
 import service.TicketService;
@@ -21,6 +22,7 @@ import util.Theme;
  * This class builds the staff validation panel.
  */
 public class StaffScreen implements Navigator.Screen {
+    private final EventService eventService;
     private final TicketService ticketService;
     private final User staffUser;
 
@@ -34,7 +36,8 @@ public class StaffScreen implements Navigator.Screen {
     /**
      * This constructor stores the services used by the staff screen.
      */
-    public StaffScreen(TicketService ticketService, UserService userService) {
+    public StaffScreen(EventService eventService, TicketService ticketService, UserService userService) {
+        this.eventService = eventService;
         this.ticketService = ticketService;
         this.staffUser = userService.getStaffUser();
     }
@@ -51,7 +54,15 @@ public class StaffScreen implements Navigator.Screen {
         backButton.setOnAction(event -> Navigator.getInstance().goBack());
         Label staffLabel = new Label(staffUser.getName());
         Theme.styleText(staffLabel, Theme.body(), Theme.TEXT_SECONDARY);
-        root.setTop(new Navbar(backButton, "Ticket Validation — Staff Panel", staffLabel));
+        Button signOutButton = Theme.createSecondaryButton("Sign out");
+        signOutButton.setOnAction(e -> {
+            userService.signOut();
+            Navigator.getInstance().navigateTo(new MainScreen(eventService, ticketService, userService));
+        });
+
+        VBox rightHeader = new VBox(Theme.SPACE_2, staffLabel, signOutButton);
+        rightHeader.setAlignment(Pos.CENTER_RIGHT);
+        root.setTop(new Navbar(backButton, "Ticket Validation — Staff Panel", rightHeader));
 
         TextField bookingField = Theme.createTextField("Enter Booking Reference...");
         bookingField.setStyle(bookingField.getStyle() + "-fx-font-size: 18px;");
@@ -90,9 +101,14 @@ public class StaffScreen implements Navigator.Screen {
         rightPanel.getChildren().addAll(Theme.createSectionTitle("Recent Scans"), tableView);
         VBox.setVgrow(tableView, Priority.ALWAYS);
 
-        HBox content = new HBox(Theme.SPACE_6, leftPanel, rightPanel);
-        HBox.setHgrow(leftPanel, Priority.ALWAYS);
-        HBox.setHgrow(rightPanel, Priority.ALWAYS);
+        ScrollPane leftScroll = Theme.createScrollPane(leftPanel);
+        leftScroll.setFitToHeight(true);
+        ScrollPane rightScroll = Theme.createScrollPane(rightPanel);
+        rightScroll.setFitToHeight(true);
+
+        SplitPane content = new SplitPane(leftScroll, rightScroll);
+        content.setDividerPositions(0.43);
+        content.setStyle("-fx-background-color: " + Theme.toRgbString(Theme.BACKGROUND) + ";");
 
         totalValidatedLabel = createStatLabel("Total Validated Today: 0", Theme.TEXT_PRIMARY);
         validLabel = createStatLabel("Valid: 0", Theme.SUCCESS);

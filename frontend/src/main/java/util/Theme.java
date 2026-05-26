@@ -1,3 +1,6 @@
+// Theme.java
+// kaam: saare colors/fonts/spacing ko centralize karke UI clear aur aesthetic banata hai
+//
 package util;
 
 import javafx.geometry.Insets;
@@ -28,11 +31,12 @@ public final class Theme {
     public static final Color PRIMARY_DARK = Color.web("#4F46E5");
     public static final Color PRIMARY_LIGHT = Color.web("#EEF2FF");
     public static final Color SECONDARY = Color.web("#06B6D4");
+    public static final Color CONCERT = Color.web("#EC4899");
     public static final Color SUCCESS = Color.web("#10B981");
     public static final Color WARNING = Color.web("#F59E0B");
     public static final Color ERROR = Color.web("#EF4444");
-    public static final Color TEXT_PRIMARY = Color.web("#1E1B4B");
-    public static final Color TEXT_SECONDARY = Color.web("#6B7280");
+    public static final Color TEXT_PRIMARY = Color.web("#0F172A");
+    public static final Color TEXT_SECONDARY = Color.web("#374151");
     public static final Color BORDER = Color.web("#E5E7EB");
     public static final Color CARD_SHADOW = Color.web("#E0E7FF");
 
@@ -51,42 +55,42 @@ public final class Theme {
      * This method returns the main heading font.
      */
     public static Font heading1() {
-        return Font.font("SansSerif", FontWeight.BOLD, 32);
+        return Font.font("Segoe UI", FontWeight.BOLD, 32);
     }
 
     /**
      * This method returns the section heading font.
      */
     public static Font heading2() {
-        return Font.font("SansSerif", FontWeight.BOLD, 24);
+        return Font.font("Segoe UI", FontWeight.BOLD, 24);
     }
 
     /**
      * This method returns the card heading font.
      */
     public static Font heading3() {
-        return Font.font("SansSerif", FontWeight.BOLD, 18);
+        return Font.font("Segoe UI", FontWeight.BOLD, 18);
     }
 
     /**
      * This method returns the default body font.
      */
     public static Font body() {
-        return Font.font("SansSerif", FontWeight.NORMAL, 14);
+        return Font.font("Segoe UI", FontWeight.NORMAL, 14);
     }
 
     /**
      * This method returns the small helper font.
      */
     public static Font small() {
-        return Font.font("SansSerif", FontWeight.NORMAL, 12);
+        return Font.font("Segoe UI", FontWeight.NORMAL, 12);
     }
 
     /**
      * This method returns the button font.
      */
     public static Font button() {
-        return Font.font("SansSerif", FontWeight.SEMI_BOLD, 13);
+        return Font.font("Segoe UI", FontWeight.SEMI_BOLD, 13);
     }
 
     /**
@@ -396,9 +400,9 @@ public final class Theme {
      */
     public static Color categoryColor(String category) {
         return switch (category == null ? "" : category.toUpperCase()) {
-            case "CONCERT" -> PRIMARY;
-            case "SPORTS" -> SECONDARY;
-            case "TECH" -> SUCCESS;
+            case "TECH" -> PRIMARY;
+            case "CONCERT" -> CONCERT;
+            case "SPORTS" -> SUCCESS;
             case "CULTURAL" -> WARNING;
             default -> TEXT_SECONDARY;
         };
@@ -409,11 +413,12 @@ public final class Theme {
      */
     public static Color statusColor(String status) {
         return switch (status == null ? "" : status.toUpperCase()) {
-            case "UPCOMING", "CONFIRMED", "VALID" -> PRIMARY;
-            case "ONGOING", "USED" -> SUCCESS;
+            case "UPCOMING" -> PRIMARY;
+            case "ONGOING" -> SUCCESS;
             case "COMPLETED" -> TEXT_SECONDARY;
+            case "CONFIRMED", "VALID" -> SUCCESS;
+            case "USED", "ALREADY USED" -> WARNING;
             case "INVALID", "CANCELLED" -> ERROR;
-            case "ALREADY USED" -> WARNING;
             default -> TEXT_SECONDARY;
         };
     }
@@ -424,10 +429,18 @@ public final class Theme {
     public static ScrollPane createScrollPane(Node content) {
         ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
+        scrollPane.setPannable(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setStyle(
             "-fx-background: " + toRgbString(BACKGROUND) + ";" +
                 "-fx-background-color: " + toRgbString(BACKGROUND) + ";"
         );
+        scrollPane.viewportBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
+            if (content instanceof Region region) {
+                region.setPrefWidth(newBounds.getWidth());
+            }
+        });
         return scrollPane;
     }
 

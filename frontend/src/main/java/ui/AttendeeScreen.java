@@ -70,12 +70,20 @@ public class AttendeeScreen implements Navigator.Screen {
         Button myTicketsButton = Theme.createSecondaryButton("My Tickets");
         myTicketsButton.setOnAction(event -> showMyTicketsDialog());
 
-        root.setTop(new Navbar(backButton, "Browse Events", myTicketsButton));
+        Button signOutButton = Theme.createSecondaryButton("Sign out");
+        signOutButton.setOnAction(e -> {
+            userService.signOut();
+            Navigator.getInstance().navigateTo(new MainScreen(eventService, ticketService, userService));
+        });
+
+        VBox rightHeader = new VBox(Theme.SPACE_2, myTicketsButton, signOutButton);
+        rightHeader.setAlignment(Pos.CENTER_RIGHT);
+        root.setTop(new Navbar(backButton, "Browse Events", rightHeader));
 
         searchField = Theme.createTextField("Search events by name or venue...");
         searchField.textProperty().addListener((obs, oldValue, newValue) -> refreshEventList());
 
-        HBox categoryFilters = new HBox(Theme.SPACE_2,
+        FlowPane categoryFilters = new FlowPane(Theme.SPACE_2, Theme.SPACE_2,
             createCategoryButton("All"),
             createCategoryButton("Concert"),
             createCategoryButton("Sports"),
@@ -83,7 +91,7 @@ public class AttendeeScreen implements Navigator.Screen {
             createCategoryButton("Cultural")
         );
 
-        HBox dateFilters = new HBox(Theme.SPACE_2,
+        FlowPane dateFilters = new FlowPane(Theme.SPACE_2, Theme.SPACE_2,
             createDateButton("All"),
             createDateButton("Today"),
             createDateButton("This Week"),
@@ -99,12 +107,12 @@ public class AttendeeScreen implements Navigator.Screen {
         purchasePanel.setPadding(new Insets(Theme.SPACE_6));
         Theme.styleCard(purchasePanel);
         showDefaultPurchaseState();
+        ScrollPane rightScroll = Theme.createScrollPane(purchasePanel);
+        rightScroll.setFitToHeight(true);
 
-        HBox content = new HBox(Theme.SPACE_6, leftScroll, purchasePanel);
-        HBox.setHgrow(leftScroll, Priority.ALWAYS);
-        HBox.setHgrow(purchasePanel, Priority.ALWAYS);
-        leftScroll.prefWidthProperty().bind(content.widthProperty().multiply(0.6));
-        purchasePanel.prefWidthProperty().bind(content.widthProperty().multiply(0.4));
+        SplitPane content = new SplitPane(leftScroll, rightScroll);
+        content.setDividerPositions(0.6);
+        content.setStyle("-fx-background-color: " + Theme.toRgbString(Theme.BACKGROUND) + ";");
 
         BorderPane.setMargin(content, new Insets(Theme.SPACE_6));
         root.setCenter(content);
@@ -461,7 +469,7 @@ public class AttendeeScreen implements Navigator.Screen {
      * This method resets sibling filter button styles.
      */
     private void resetSiblingButtons(Button selectedButton) {
-        HBox parent = (HBox) selectedButton.getParent();
+        Pane parent = (Pane) selectedButton.getParent();
         for (javafx.scene.Node node : parent.getChildren()) {
             if (node instanceof Button button) {
                 button.setTextFill(Theme.PRIMARY);

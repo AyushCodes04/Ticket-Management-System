@@ -70,7 +70,15 @@ public class OrganizerScreen implements Navigator.Screen {
         Label welcomeLabel = new Label("Welcome, " + organizerUser.getName());
         Theme.styleText(welcomeLabel, Theme.body(), Theme.TEXT_SECONDARY);
 
-        root.setTop(new Navbar(backButton, "Organizer Dashboard", welcomeLabel));
+        Button signOutButton = Theme.createSecondaryButton("Sign out");
+        signOutButton.setOnAction(e -> {
+            userService.signOut();
+            Navigator.getInstance().navigateTo(new MainScreen(eventService, ticketService, userService));
+        });
+
+        VBox rightHeader = new VBox(Theme.SPACE_2, welcomeLabel, signOutButton);
+        rightHeader.setAlignment(Pos.CENTER_RIGHT);
+        root.setTop(new Navbar(backButton, "Organizer Dashboard", rightHeader));
 
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -236,12 +244,15 @@ public class OrganizerScreen implements Navigator.Screen {
         rightPanel.getChildren().addAll(Theme.createSectionTitle("Event Preview"), previewCard);
         updatePreview("", "", "", "", "", "", null, draftTypes);
 
-        HBox content = new HBox(Theme.SPACE_6, leftPanel, rightPanel);
-        HBox.setHgrow(leftPanel, Priority.ALWAYS);
-        HBox.setHgrow(rightPanel, Priority.ALWAYS);
-        leftPanel.prefWidthProperty().bind(content.widthProperty().multiply(0.4));
-        rightPanel.prefWidthProperty().bind(content.widthProperty().multiply(0.6));
-        return Theme.createScrollPane(content);
+        ScrollPane leftScroll = Theme.createScrollPane(leftPanel);
+        ScrollPane rightScroll = Theme.createScrollPane(rightPanel);
+        leftScroll.setFitToHeight(true);
+        rightScroll.setFitToHeight(true);
+
+        SplitPane splitPane = new SplitPane(leftScroll, rightScroll);
+        splitPane.setDividerPositions(0.4);
+        splitPane.setStyle("-fx-background-color: " + Theme.toRgbString(Theme.BACKGROUND) + ";");
+        return splitPane;
     }
 
     /**
@@ -251,7 +262,9 @@ public class OrganizerScreen implements Navigator.Screen {
         eventSearchField = Theme.createTextField("Search by event name");
         eventSearchField.textProperty().addListener((obs, oldValue, newValue) -> refreshMyEventsGrid());
 
-        HBox filters = new HBox(Theme.SPACE_2);
+        FlowPane filters = new FlowPane();
+        filters.setHgap(Theme.SPACE_2);
+        filters.setVgap(Theme.SPACE_2);
         filters.getChildren().addAll(
             createFilterButton("All"),
             createFilterButton("Upcoming"),
@@ -265,6 +278,7 @@ public class OrganizerScreen implements Navigator.Screen {
 
         VBox container = new VBox(Theme.SPACE_4);
         container.getChildren().addAll(eventSearchField, filters, eventsGrid);
+        eventsGrid.prefWrapLengthProperty().bind(container.widthProperty().subtract(24));
         return Theme.createScrollPane(container);
     }
 
@@ -626,7 +640,7 @@ public class OrganizerScreen implements Navigator.Screen {
         }
         button.setOnAction(event -> {
             activeEventFilter = label;
-            HBox parent = (HBox) button.getParent();
+            Pane parent = (Pane) button.getParent();
             for (javafx.scene.Node node : parent.getChildren()) {
                 if (node instanceof Button filterButton) {
                     resetFilterStyle(filterButton);

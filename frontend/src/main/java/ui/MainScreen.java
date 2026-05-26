@@ -3,9 +3,14 @@ package ui;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import service.EventService;
 import service.TicketService;
 import service.UserService;
@@ -61,13 +66,56 @@ public class MainScreen implements Navigator.Screen {
         roleCards.setVgap(Theme.SPACE_6);
         roleCards.setMaxWidth(1160);
 
+        var currentUser = userService.getCurrentUser();
         roleCards.getChildren().addAll(
-            createRoleCard("🎯", "Event Organizer", "Create events, manage ticket sales, track revenue and attendance", "Go to Dashboard",
-                () -> Navigator.getInstance().navigateTo(new OrganizerScreen(eventService, ticketService, userService))),
-            createRoleCard("🎟", "Event Attendee", "Browse events, purchase tickets, view your booking history", "Browse Events",
-                () -> Navigator.getInstance().navigateTo(new AttendeeScreen(eventService, ticketService, userService))),
-            createRoleCard("✅", "Event Staff", "Validate tickets at entry, scan QR codes, manage gate access", "Open Scanner",
-                () -> Navigator.getInstance().navigateTo(new StaffScreen(ticketService, userService)))
+            createRoleCard(
+                "🎯", "Organizer",
+                "Events create karo, sales track karo, stats dekho.",
+                "Demo: organizer@eventhub.com / organizer123",
+                currentUser != null && "ORGANIZER".equalsIgnoreCase(currentUser.getRole())
+                    ? "Continue to Dashboard"
+                    : "Login",
+                () -> {
+                    if (currentUser != null && "ORGANIZER".equalsIgnoreCase(currentUser.getRole())) {
+                        Navigator.getInstance().navigateTo(new OrganizerScreen(eventService, ticketService, userService));
+                        return;
+                    }
+                    openLoginDialog("ORGANIZER", "Organizer Login", "organizer@eventhub.com", () ->
+                        Navigator.getInstance().navigateTo(new OrganizerScreen(eventService, ticketService, userService)));
+                }
+            ),
+            createRoleCard(
+                "🎟", "Attendee",
+                "Events browse karo, tickets buy karo, booking history dekho.",
+                "Demo: aman@example.com / attendee123",
+                currentUser != null && "ATTENDEE".equalsIgnoreCase(currentUser.getRole())
+                    ? "Continue to Browse"
+                    : "Login",
+                () -> {
+                    if (currentUser != null && "ATTENDEE".equalsIgnoreCase(currentUser.getRole())) {
+                        Navigator.getInstance().navigateTo(new AttendeeScreen(eventService, ticketService, userService));
+                        return;
+                    }
+                    openLoginDialog("ATTENDEE", "Attendee Login", "aman@example.com", () ->
+                        Navigator.getInstance().navigateTo(new AttendeeScreen(eventService, ticketService, userService)));
+                }
+            ),
+            createRoleCard(
+                "✅", "Staff",
+                "Gate entry pe tickets validate karo aur recent scans dekho.",
+                "Demo: staff@eventhub.com / staff123",
+                currentUser != null && "STAFF".equalsIgnoreCase(currentUser.getRole())
+                    ? "Continue to Scanner"
+                    : "Login",
+                () -> {
+                    if (currentUser != null && "STAFF".equalsIgnoreCase(currentUser.getRole())) {
+                        Navigator.getInstance().navigateTo(new StaffScreen(eventService, ticketService, userService));
+                        return;
+                    }
+                    openLoginDialog("STAFF", "Staff Login", "staff@eventhub.com", () ->
+                        Navigator.getInstance().navigateTo(new StaffScreen(eventService, ticketService, userService)));
+                }
+            )
         );
 
         VBox.setVgrow(roleCards, Priority.ALWAYS);
@@ -86,7 +134,7 @@ public class MainScreen implements Navigator.Screen {
     /**
      * This method creates one role entry card.
      */
-    private VBox createRoleCard(String icon, String title, String description, String buttonText, Runnable action) {
+    private VBox createRoleCard(String icon, String title, String description, String hint, String buttonText, Runnable action) {
         VBox card = new VBox(Theme.SPACE_4);
         card.setAlignment(Pos.TOP_CENTER);
         card.setPadding(new Insets(Theme.SPACE_6));
@@ -96,7 +144,7 @@ public class MainScreen implements Navigator.Screen {
         Theme.installCardHover(card, card);
 
         Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 34px;");
+        iconLabel.setFont(Theme.heading2());
 
         Label titleLabel = new Label(title);
         Theme.styleText(titleLabel, Theme.heading3(), Theme.TEXT_PRIMARY);
@@ -106,12 +154,80 @@ public class MainScreen implements Navigator.Screen {
         descriptionLabel.setWrapText(true);
         descriptionLabel.setAlignment(Pos.CENTER);
 
+        Label hintLabel = new Label(hint);
+        Theme.styleText(hintLabel, Theme.small(), Theme.TEXT_SECONDARY);
+        hintLabel.setWrapText(true);
+        hintLabel.setAlignment(Pos.CENTER);
+
         Button actionButton = Theme.createPrimaryButton(buttonText);
         actionButton.setMaxWidth(Double.MAX_VALUE);
         actionButton.setOnAction(event -> action.run());
 
         VBox.setVgrow(descriptionLabel, Priority.ALWAYS);
-        card.getChildren().addAll(iconLabel, titleLabel, descriptionLabel, actionButton);
+        card.getChildren().addAll(iconLabel, titleLabel, descriptionLabel, hintLabel, actionButton);
         return card;
+    }
+
+    /**
+     * This method login dialog show karke success par onSuccess run karta hai.
+     */
+    private void openLoginDialog(String role, String title, String emailHint, Runnable onSuccess) {
+        Stage dialog = new Stage();
+        dialog.initOwner(Navigator.getInstance().getScene().getWindow());
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle(title);
+
+        VBox content = new VBox(Theme.SPACE_4);
+        content.setPadding(new Insets(Theme.SPACE_6));
+        Theme.stylePage(content);
+
+        Label heading = new Label(title);
+        Theme.styleText(heading, Theme.heading2(), Theme.TEXT_PRIMARY);
+
+        Label emailLabel = new Label("Email");
+        Theme.styleText(emailLabel, Theme.body(), Theme.TEXT_PRIMARY);
+        TextField emailField = Theme.createTextField("Email");
+        emailField.setText(emailHint);
+
+        Label passLabel = new Label("Password");
+        Theme.styleText(passLabel, Theme.body(), Theme.TEXT_PRIMARY);
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Password");
+        Theme.styleInput(passwordField);
+
+        Label errorLabel = new Label();
+        Theme.styleText(errorLabel, Theme.small(), Theme.ERROR);
+
+        Button loginButton = Theme.createPrimaryButton("Login");
+        loginButton.setMaxWidth(Double.MAX_VALUE);
+
+        loginButton.setOnAction(e -> {
+            errorLabel.setText("");
+            Theme.clearError(emailField);
+            Theme.clearError(passwordField);
+
+            var user = userService.login(role, emailField.getText(), passwordField.getText());
+            if (user == null) {
+                Theme.markError(emailField);
+                Theme.markError(passwordField);
+                errorLabel.setText("Login failed. Demo credentials use karo.");
+                return;
+            }
+            dialog.close();
+            onSuccess.run();
+        });
+
+        content.getChildren().addAll(
+            heading,
+            emailLabel,
+            emailField,
+            passLabel,
+            passwordField,
+            errorLabel,
+            loginButton
+        );
+
+        dialog.setScene(new Scene(content, 420, 360));
+        dialog.showAndWait();
     }
 }

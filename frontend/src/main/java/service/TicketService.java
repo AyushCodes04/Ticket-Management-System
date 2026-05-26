@@ -1,5 +1,6 @@
 package service;
 
+import data.DummyData;
 import model.Event;
 import model.Ticket;
 
@@ -166,18 +167,12 @@ public class TicketService {
      * This method adds sample bookings for attendee and staff flows.
      */
     private void seedSampleTickets() {
-        Event techSummit = eventService.getAllEvents().stream().filter(event -> event.getName().equals("Tech Summit 2025")).findFirst().orElse(null);
-        Event designExpo = eventService.getAllEvents().stream().filter(event -> event.getName().equals("Design Futures Expo")).findFirst().orElse(null);
-        if (techSummit != null) {
-            purchasedTickets.add(new Ticket("EH25-4D92", techSummit.getId(), techSummit.getName(), "VIP", 2, 3998, "Aman Sharma", "aman@example.com", "CONFIRMED", LocalDateTime.now().minusDays(1)));
-            purchasedTickets.add(new Ticket("EH25-2B71", techSummit.getId(), techSummit.getName(), "General", 1, 599, "Aman Sharma", "aman@example.com", "USED", LocalDateTime.now().minusDays(3)));
-        }
-        if (designExpo != null) {
-            purchasedTickets.add(new Ticket("EH26-8Q14", designExpo.getId(), designExpo.getName(), "Visitor", 3, 1197, "Aman Sharma", "aman@example.com", "CONFIRMED", LocalDateTime.now().minusHours(7)));
-        }
-        validationHistory.add(new ValidationResult(LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 12)), "EH25-2B71", "Aman Sharma", "Tech Summit 2025", "ALREADY USED", "This ticket has already been used", null));
-        validationHistory.add(new ValidationResult(LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 5)), "ZZ99-1111", "", "", "INVALID", "This booking reference was not found", null));
-        validationHistory.add(new ValidationResult(LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 58)), "EH25-4D92", "Aman Sharma", "Tech Summit 2025", "VALID", "Ticket is ready for entry", null));
+        purchasedTickets.clear();
+        purchasedTickets.addAll(DummyData.getTickets());
+        validationHistory.clear();
+        validateTicket("EH-2025-000111");
+        validateTicket("EH-2025-000222");
+        validateTicket("ZZ99-1111");
     }
 
     /**
